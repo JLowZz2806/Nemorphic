@@ -119,7 +119,7 @@ html {
     /* Regresa el navbar a su posición normal */
     opacity: 1;
     /* Completamente visible */
-    background: url("assets/banner.jpg") no-repeat center center;
+    background: url("Assets/banner.jpg") no-repeat center center;
     background-size: cover;
 }
 
@@ -184,7 +184,7 @@ html {
     left: 0;
     width: 100%;
     height: 100%;
-    background: url('assets/inicio.png') no-repeat center center;
+    background: url('Assets/inicio.png') no-repeat center center;
     background-size: cover;
     animation: waveFlow 12s ease-in-out infinite;
     z-index: -1;
@@ -454,7 +454,7 @@ html {
    SECCIÓN LANZAMIENTOS
 =============================== */
 #lanzamientos {
-    background: url("assets/lanzamientos.png") no-repeat center center;
+    background: url("Assets/lanzamientos.png") no-repeat center center;
     background-size: cover;
     /* ajusta la imagen al tamaño de la sección */
     background-attachment: fixed;
