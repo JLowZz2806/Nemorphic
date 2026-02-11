@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nemorphic - Techno Label</title>
+    <link rel="icon" type="image/x-icon" sizes="50x50" href="assets/favicon.svg">
+
+    <!-- Google Fonts: Space Grotesk & IBM Plex Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Estilos propios -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-dark text-light">
+
+    <!-- NAVBAR -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-black fixed-top">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <img src="Assets/logo nemorphic.png" alt="Logo Nemorphic" width="50" height="50" class="me-2">
+                    Nemorphic
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="menu">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="#inicio">Inicio</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#quienes">Quiénes somos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#artistas">Artistas</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#lanzamientos">Lanzamientos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#eventos">Eventos</a></li>
+
+                        <!-- botones que controlamos con JS -->
+                        <li class="nav-item">
+                            <a class="nav-link nav-destacado" href="javascript:void(0)" id="btnNoticias">Noticias</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-destacado" href="javascript:void(0)" id="btnTienda">Tienda</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main>
+
+        <!-- Inicio -->
+        <section id="inicio" class="vh-100 d-flex flex-column justify-content-center text-center text-light">
+            <img src="Assets/Logo nemorphic.png" alt="Logo Nemorphic" class="logo-inicio mb-4">
+            <h1 class="display-4">Bienvenidos a Nemorphic</h1>
+            <p class="lead">Más que groove, cultura.</p>
+        </section>
+
+
+        <!-- Quiénes somos -->
+        <section id="quienes" class="container py-5">
+            <h2 class="text-info mb-4">Quiénes somos</h2>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="subtitulo-morado">Visión</h5>
+                    <p>
+                        Ser un sello que impulse a los artistas locales y emergentes del techno,
+                        reconocido por ofrecer un espacio auténtico donde la innovación sonora y la cultura se fusionen.
+                        Aspiramos a consolidarnos como una comunidad sólida que inspire, conecte, sienta y expanda la
+                        escena,
+                        llevando la música más allá de la pista de baile y fortaleciendo la identidad del movimiento
+                        techno a nivel
+                        global.
+                    </p>
+                </div>
+
+                <div class="col-md-6 linea-izquierda">
+                    <h5 class="subtitulo-morado">Misión</h5>
+                    <p>
+                        Nuestra misión es distribuir música techno, crear eventos underground y fortalecer una comunidad
+                        auténtica
+                        que apoye a los artistas locales y emergentes, conectando con el público general por medio de la
+                        musica y la
+                        cultura
+                        y expandiendo la cultura electrónica.
+                    </p>
+                </div>
+            </div>
+        </section>
+        <!-- Artistas -->
+        <section id="artistas" class="container py-5">
+            <h2 class="text-info">Artistas</h2>
+            <div id="lista-artistas" class="row g-3">
+                <!-- JS llenará aquí con un ciclo -->
+            </div>
+        </section>
+
+        <!-- Lanzamientos -->
+        <section id="lanzamientos" class="container py-5">
+            <h2 class="mb-4 text-center">Lanzamientos</h2>
+
+            <!-- Botón de SoundCloud centrado -->
+            <div class="text-center mb-4">
+                <a href="https://on.soundcloud.com/aFdfOtNl7lBho5Xygy" target="_blank"
+                    class="btn-soundcloud-lanzamientos">
+                    Escuchar en SoundCloud
+                </a>
+            </div>
+
+            <div id="lista-lanzamientos" class="row g-4">
+                <!-- Se llena dinámicamente con JS -->
+            </div>
+        </section>
+
+        <!-- Eventos -->
+        <section id="eventos" class="container py-5">
+            <h2 class="text-info">Eventos</h2>
+            <p>Próximamente...</p>
+        </section>
+
+        <!-- Formulario eliminado -->
+
+    </main>
+
+    <!-- BOTÓN FLOTANTE DE CONTACTO -->
+    <div id="btnContactoFlotante" class="floating-btn">
+        <img src="Assets/Logo nemorphic.png" alt="Contacto">
+    </div>
+
+    <!-- MODAL CONTACTO -->
+    <div id="modalContacto" class="modal-custom">
+        <div class="modal-content-nemorphic">
+            <div class="modal-header-nemorphic">
+                <h3 class="modal-title-nemorphic">Conecta con Nemorphic</h3>
+                <span class="close-nemorphic" id="closeContacto">&times;</span>
+            </div>
+
+            <div class="modal-body-nemorphic">
+                <!-- Opción 1: Newsletter -->
+                <div class="mb-5">
+                    <h5 class="modal-subtitle-nemorphic">Newsletter</h5>
+                    <p class="modal-text-nemorphic">Suscríbete para recibir novedades y lanzamientos.</p>
+                    <form id="newsletterForm" class="d-flex gap-2 justify-content-center flex-wrap">
+                        <input type="email" class="form-control-nemorphic" placeholder="Tu correo" required>
+                        <button type="submit" class="btn-nemorphic">Suscribir</button>
+                    </form>
+                </div>
+
+                <hr class="modal-divider-nemorphic">
+
+                <!-- Opción 2: Correo directo -->
+                <div>
+                    <h5 class="modal-subtitle-nemorphic">Contacto Directo</h5>
+                    <p class="modal-text-nemorphic">Escríbenos directamente a nuestro correo.</p>
+                    <a href="mailto:nemorphictechno@gmail.com" class="btn-nemorphic">
+                        nemorphictechno@gmail.com
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOTICIAS -->
+    <div id="modalNoticias" class="modal-custom">
+        <div class="modal-content-nemorphic">
+            <div class="modal-header-nemorphic">
+                <h2 class="modal-title-nemorphic">Noticias</h2>
+                <span class="close-nemorphic" id="closeNoticias">&times;</span>
+            </div>
+
+            <div class="modal-body-nemorphic text-start">
+                <div class="noticia-item mb-4">
+                    <h5 class="modal-subtitle-nemorphic">Nuevo EP en camino</h5>
+                    <p class="modal-text-nemorphic">Estamos trabajando en los últimos detalles del próximo lanzamiento.
+                        Mantente
+                        atento a nuestras redes.</p>
+                </div>
+
+                <div class="noticia-item">
+                    <h5 class="modal-subtitle-nemorphic">Nemorphic Session #001 - Nyrae</h5>
+                    <p class="modal-text-nemorphic">Ya disponible en SoundCloud. Un viaje sonoro de 2 horas.</p>
+                    <a href="https://soundcloud.com/nemorphic/nms-001-nyrae" target="_blank"
+                        class="btn-nemorphic mt-2">Escuchar
+                        ahora</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TIENDA -->
+    <div id="modalTienda" class="modal-custom">
+        <div class="modal-content-nemorphic">
+            <div class="modal-header-nemorphic">
+                <h2 class="modal-title-nemorphic">Tienda</h2>
+                <span class="close-nemorphic" id="closeTienda">&times;</span>
+            </div>
+
+            <div class="modal-body-nemorphic">
+                <p class="modal-text-nemorphic mb-4">Apoya a nuestros artistas comprando su música en alta calidad.</p>
+
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="https://bandcamp.com" target="_blank" class="btn-nemorphic">Bandcamp</a>
+                    <a href="https://beatport.com" target="_blank" class="btn-nemorphic">Beatport</a>
+                </div>
+
+                <p class="modal-text-nemorphic mt-4 opacity-50 small">Próximamente: Merch oficial</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-black text-center p-3">
+        <div class="social-icons mb-2">
+            <a href="https://www.instagram.com/nemorphic_th?igsh=N3pvOXdjbmdvZ3Rx" target="_blank"
+                rel="noopener noreferrer">
+                <img src="assets/ig.png" alt="Instagram" class="icono-red">
+            </a>
+            <a href="https://on.soundcloud.com/f8F7NRYeYPHd3yvRDR" target="_blank" rel="noopener noreferrer">
+                <img src="assets/soundcloud.png" alt="SoundCloud" class="icono-red">
+            </a>
+            <a href="https://www.youtube.com/channel/UC4OLVzfXHWhQ_wk1FYzOUwg" target="_blank"
+                rel="noopener noreferrer">
+                <img src="assets/yt.png" alt="YouTube" class="icono-red">
+            </a>
+        </div>
+        <p class="m-0">© 2025 Nemorphic | Todos los derechos reservados</p>
+        <p class="contacto-footer">
+            📧 nemorphictechno@gmail.com <br>
+            📞 318 612 1615 | 302 636 9050
+        </p>
+    </footer>
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Nuestro JS -->
+    <script src="script.js"></script>
+</body>
+
+</html>

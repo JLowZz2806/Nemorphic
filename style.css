@@ -1,0 +1,717 @@
+/* =====================================================
+   VARIABLES GLOBALES
+===================================================== */
+:root {
+    --color-negro: #000000;
+    --color-gris-oscuro: #1a1a1a;
+    --color-morado: #3f1580;
+    /* principal */
+    --color-morado-claro: #d29ccc;
+    /* hover, detalles */
+    --color-blanco: #ffffff;
+
+    /* Tipografía */
+    --font-heading: 'DM Serif Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+}
+
+/* =====================================================
+   ESTILOS BASE / GENERALES
+===================================================== */
+body {
+    background-color: var(--color-negro) !important;
+    color: var(--color-blanco) !important;
+    font-family: var(--font-body);
+    font-weight: 300;
+    /* Ligero para sensación editorial */
+    line-height: 1.7;
+}
+
+.bg-dark,
+.bg-black {
+    background-color: var(--color-negro) !important;
+    color: var(--color-blanco) !important;
+}
+
+.text-light {
+    color: var(--color-blanco) !important;
+}
+
+.text-info {
+    color: var(--color-morado) !important;
+}
+
+/* Tipografía: Títulos y encabezados */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.display-1,
+.display-2,
+.display-3,
+.display-4,
+.display-5,
+.display-6 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    /* DM Serif Display es Regular */
+    letter-spacing: 0.02em;
+    /* Espaciado elegante */
+    line-height: 1.1;
+}
+
+h1,
+.display-4 {
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+h2 {
+    font-weight: 400;
+}
+
+h5,
+.subtitulo-morado {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    font-style: italic;
+    /* Toque editorial */
+}
+
+/* Tipografía: Párrafos y textos */
+p,
+.lead {
+    font-family: var(--font-body);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+}
+
+.lead {
+    font-size: 1.25rem;
+    font-weight: 300;
+    opacity: 0.9;
+}
+
+html {
+    scroll-padding-top: 74px;
+    /* Evita que la navbar tape títulos */
+}
+
+/* =====================================================
+   HEADER / NAVBAR
+===================================================== */
+.navbar {
+    /* Navbar oculto inicialmente */
+    transform: translateY(-100%);
+    /* Mueve el navbar fuera de la pantalla hacia arriba */
+    opacity: 0;
+    /* Completamente transparente */
+    transition: all 0.4s ease;
+    /* Transición suave al aparecer/desaparecer */
+}
+
+/* Clase que se agrega cuando el usuario hace scroll */
+.navbar.navbar-scrolled {
+    transform: translateY(0);
+    /* Regresa el navbar a su posición normal */
+    opacity: 1;
+    /* Completamente visible */
+    background: url("assets/banner.jpg") no-repeat center center;
+    background-size: cover;
+}
+
+.navbar .navbar-brand {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    font-size: 1.5rem;
+}
+
+.navbar .nav-link {
+    color: var(--color-blanco) !important;
+    font-family: var(--font-body);
+    font-weight: 400;
+    /* Editorial clean */
+    letter-spacing: 0.1em;
+    /* Más espaciado para elegancia */
+    transition: color 0.3s ease;
+    font-size: 0.85rem;
+    /* Discreto y minimalista */
+    text-transform: uppercase;
+}
+
+.navbar .nav-link:hover {
+    color: var(--color-morado-claro) !important;
+}
+
+/* Botones destacados (Noticias y Tienda) */
+.nav-destacado {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    color: var(--color-morado);
+    font-family: var(--font-body);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.nav-destacado:hover {
+    background-color: var(--color-negro);
+    color: var(--color-blanco) !important;
+    box-shadow: 0 0 12px rgba(160, 32, 240, 0.7);
+}
+
+/* =====================================================
+   SECCIÓN INICIO
+===================================================== */
+/* La sección de inicio ahora ocupa toda la pantalla desde arriba */
+
+/* Animación de ondas fluidas para el fondo */
+#inicio {
+    position: relative;
+    overflow: hidden;
+}
+
+#inicio::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('assets/inicio.png') no-repeat center center;
+    background-size: cover;
+    animation: waveFlow 12s ease-in-out infinite;
+    z-index: -1;
+}
+
+/* Keyframes para el efecto de ondas fluidas */
+@keyframes waveFlow {
+
+    0%,
+    100% {
+        transform: scale(1.05) translateX(0) translateY(0);
+    }
+
+    25% {
+        transform: scale(1.08) translateX(-2%) translateY(1%);
+    }
+
+    50% {
+        transform: scale(1.05) translateX(0) translateY(-1%);
+    }
+
+    75% {
+        transform: scale(1.08) translateX(2%) translateY(1%);
+    }
+}
+
+
+/* Asegurar que el contenido esté sobre el fondo animado */
+#inicio h1,
+#inicio p,
+#inicio .logo-inicio {
+    position: relative;
+    z-index: 1;
+}
+
+/* Estilos para el logo en la sección de inicio */
+.logo-inicio {
+    width: 154.5px;
+    height: auto;
+    margin: 0 auto;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+    animation: logoFloat 3s ease-in-out infinite;
+}
+
+/* Animación sutil de flotación para el logo */
+@keyframes logoFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Responsive: logo más pequeño en móviles */
+@media (max-width: 576px) {
+    .logo-inicio {
+        width: 100px;
+    }
+}
+
+/* =====================================================
+   BOTÓN FLOTANTE CONTACTO
+===================================================== */
+.floating-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 70px;
+    height: 70px;
+    background-color: transparent;
+    /* Fondo transparente solicitado */
+    border: 2px solid var(--color-morado);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 0 15px rgba(63, 21, 128, 0.5);
+    transition: all 0.3s ease;
+    animation: pulseGlow 3s infinite;
+}
+
+.floating-btn img {
+    width: 45px;
+    height: auto;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+    transition: transform 0.3s ease;
+}
+
+.floating-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(63, 21, 128, 0.8);
+    background-color: rgba(63, 21, 128, 0.1);
+    /* Sutil fondo al hover */
+    border-color: var(--color-blanco);
+}
+
+.floating-btn:hover img {
+    transform: rotate(15deg) scale(1.1);
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 15px rgba(63, 21, 128, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(63, 21, 128, 0.8);
+    }
+
+    100% {
+        box-shadow: 0 0 15px rgba(63, 21, 128, 0.5);
+    }
+}
+
+/* =====================================================
+   ESTILOS MODAL CONTACTO
+===================================================== */
+.contact-modal {
+    /* Sobrescribe estilos genéricos del modal si es necesario */
+    max-width: 500px;
+    border: 1px solid var(--color-morado);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.font-heading {
+    font-family: var(--font-heading);
+}
+
+/* Ajuste inputs formulario newsletter */
+#newsletterForm input:focus {
+    background-color: rgba(63, 21, 128, 0.1) !important;
+    color: #fff !important;
+    border-color: var(--color-morado) !important;
+    box-shadow: 0 0 10px rgba(63, 21, 128, 0.3);
+}
+
+/* ===============================
+   BOTÓN SOUNDCLOUD (INICIO - YA NO SE USA)
+=============================== */
+.btn-soundcloud {
+    display: inline-block;
+    color: var(--color-blanco);
+    border: 2px solid var(--color-blanco);
+    padding: 0.4rem 1.2rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    background-color: transparent;
+}
+
+.btn-soundcloud:hover {
+    background-color: var(--color-morado);
+    border-color: var(--color-morado);
+    color: var(--color-blanco);
+    box-shadow: 0 0 10px rgba(160, 32, 240, 0.7);
+}
+
+/* ===============================
+   BOTÓN SOUNDCLOUD (LANZAMIENTOS)
+=============================== */
+.btn-soundcloud-lanzamientos {
+    display: inline-block;
+    color: var(--color-blanco);
+    background-color: var(--color-morado);
+    border: 2px solid var(--color-morado);
+    padding: 0.6rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.btn-soundcloud-lanzamientos:hover {
+    background-color: transparent;
+    border-color: var(--color-blanco);
+    color: var(--color-blanco);
+    box-shadow: 0 0 20px rgba(106, 13, 173, 0.8);
+    transform: translateY(-2px);
+}
+
+
+/* =====================================================
+   SECCIÓN QUIÉNES SOMOS
+===================================================== */
+#quienes {
+    padding-top: 100px;
+    /* Space for fixed navbar */
+}
+
+.subtitulo-morado {
+    color: var(--color-morado);
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+}
+
+.linea-izquierda {
+    border-left: 3px solid var(--color-morado);
+    padding-left: 1.5rem;
+    animation: borderPulse 4s infinite alternate;
+}
+
+@keyframes borderPulse {
+    0% {
+        border-color: var(--color-morado);
+    }
+
+    50% {
+        border-color: var(--color-morado-claro);
+    }
+
+    100% {
+        border-color: #9b59b6;
+    }
+}
+
+/* =====================================================
+   SECCIÓN ARTISTAS
+===================================================== */
+.card {
+    background-color: var(--color-negro) !important;
+    border: 1px solid var(--color-gris-oscuro);
+    color: var(--color-blanco);
+}
+
+.card .card-title {
+    color: var(--color-morado);
+}
+
+/* ===============================
+   BOTONES DE ARTISTAS (SOUNDCLOUD)
+=============================== */
+.card .btn {
+    display: inline-block;
+    color: var(--color-blanco);
+    border: 2px solid var(--color-blanco);
+    padding: 0.3rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    background-color: transparent;
+    transition: all 0.3s ease;
+}
+
+.card .btn:hover {
+    background-color: var(--color-morado);
+    border-color: var(--color-morado);
+    color: var(--color-blanco);
+    box-shadow: 0 0 10px rgba(160, 32, 240, 0.7);
+}
+
+
+/* ===============================
+   SECCIÓN LANZAMIENTOS
+=============================== */
+#lanzamientos {
+    background: url("assets/lanzamientos.png") no-repeat center center;
+    background-size: cover;
+    /* ajusta la imagen al tamaño de la sección */
+    background-attachment: fixed;
+    /* efecto parallax opcional (puedes quitarlo si no quieres que se mueva) */
+    color: var(--color-blanco);
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+#lanzamientos h2 {
+    color: var(--color-blanco);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.lanzamiento-card {
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 2px solid #000;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.lanzamiento-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 0 15px rgba(106, 13, 173, 0.5);
+}
+
+.lanzamiento-card .card-title {
+    color: var(--color-blanco);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.lanzamiento-card iframe {
+    border: none;
+    width: 100%;
+    height: 166px;
+    border-radius: 6px;
+    background: transparent;
+}
+
+.lanzamiento-card {
+    background-color: transparent;
+}
+
+
+/* =====================================================
+   SECCIÓN EVENTOS
+===================================================== */
+/* (Puedes agregar estilos específicos si los necesitas) */
+
+/* =====================================================
+   ESTILOS MODAL NEMORPHIC (REDISEÑO)
+===================================================== */
+.modal-custom {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    /* Fondo muy oscuro */
+    backdrop-filter: blur(8px);
+    /* Blur intenso */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content-nemorphic {
+    background: rgba(10, 10, 10, 0.95);
+    /* Casi negro, sutilmente transparente */
+    border: 1px solid rgba(63, 21, 128, 0.3);
+    /* Borde morado muy sutil */
+    border-radius: 4px;
+    /* Bordes poco redondeados (más técnico/underground) */
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), 0 0 10px rgba(63, 21, 128, 0.2);
+    max-width: 550px;
+    width: 90%;
+    padding: 0;
+    /* Padding manejado internamente */
+    animation: modalFadeIn 0.4s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-header-nemorphic {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body-nemorphic {
+    padding: 2rem;
+    text-align: center;
+    /* Centrado por defecto */
+}
+
+.modal-title-nemorphic {
+    font-family: var(--font-heading);
+    color: var(--color-blanco);
+    font-size: 1.8rem;
+    margin: 0;
+    letter-spacing: 0.02em;
+}
+
+.modal-subtitle-nemorphic {
+    font-family: var(--font-heading);
+    color: var(--color-morado);
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 400;
+}
+
+.modal-text-nemorphic {
+    font-family: var(--font-body);
+    color: #ccc;
+    font-size: 0.95rem;
+    font-weight: 300;
+    line-height: 1.6;
+}
+
+.modal-divider-nemorphic {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 2rem 0;
+}
+
+/* Botón cerrar */
+.close-nemorphic {
+    color: #666;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-nemorphic:hover {
+    color: var(--color-blanco);
+}
+
+/* Animación */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* INPUTS NEMORPHIC */
+.form-control-nemorphic {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #444;
+    color: var(--color-blanco);
+    padding: 0.6rem 0;
+    width: 100%;
+    max-width: 250px;
+    font-family: var(--font-body);
+    transition: all 0.3s ease;
+}
+
+.form-control-nemorphic:focus {
+    outline: none;
+    border-bottom-color: var(--color-morado);
+    box-shadow: 0 1px 0 var(--color-morado);
+}
+
+/* BOTONES NEMORPHIC (Estilo Artistas & Links Modales) */
+.btn-nemorphic {
+    background: transparent;
+    color: var(--color-blanco) !important;
+    /* Forzar blanco para evitar azul de links */
+    border: 1px solid var(--color-blanco);
+    padding: 0.5rem 1.5rem;
+    font-family: var(--font-heading);
+    /* O body según preferencia, heading queda elegante */
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+/* Corrección específica para evitar enlaces azules */
+.modal-content-nemorphic a.btn-nemorphic,
+.modal-body-nemorphic a.btn-nemorphic {
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+.modal-content-nemorphic a.btn-nemorphic:hover,
+.modal-body-nemorphic a.btn-nemorphic:hover {
+    color: #ffffff !important;
+    background-color: var(--color-morado) !important;
+    border-color: var(--color-morado) !important;
+    box-shadow: 0 0 15px rgba(63, 21, 128, 0.6);
+}
+
+/* =====================================================
+   FOOTER
+===================================================== */
+footer {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #fff;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    margin-top: 2rem;
+}
+
+footer p {
+    margin: 0.4rem 0;
+    font-size: 0.9rem;
+}
+
+.contacto-footer {
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.social-icons a {
+    margin: 0 10px;
+    display: inline-block;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.icono-red {
+    width: 28px;
+    height: 28px;
+    filter: invert(1);
+}
+
+.social-icons a:hover {
+    transform: scale(1.2);
+    filter: invert(41%) sepia(91%) saturate(6332%) hue-rotate(263deg) brightness(91%) contrast(92%);
+}
+
+.contacto-footer br {
+    display: none;
+}
+
+@media (max-width: 576px) {
+    .contacto-footer br {
+        display: inline;
+    }
+}
