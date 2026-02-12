@@ -74,25 +74,25 @@ window.onclick = (e) => {
 const artistas = [
     {
         nombre: "J Løwℤ",
-        imagen: "Assets/artistas/jlowz.jpg", // 📸 CAMBIA ESTA RUTA POR LA FOTO REAL
+        imagen: "Assets/artistas/jlowz.JPG", // 📸 CAMBIA ESTA RUTA POR LA FOTO REAL
         descripcion: "Arquitecto de expansión profunda y tensión contenida. J Løwℤ fusiona capas atmosféricas y graves oscuros en un viaje inmersivo.", // 📝 AGREGA AQUÍ LA DESCRIPCIÓN
         soundcloud: "https://soundcloud.com/juan-jose-lopez-775910207?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
     },
     {
         nombre: "DSTRKT",
-        imagen: "Assets/artistas/dstrkt.jpg",
+        imagen: "Assets/artistas/dstrkt.JPG",
         descripcion: "Arquitecto de progresiones hipnóticas y atmósferas mentales. DSTRKT transforma la pista en un espacio de trance envolvente y movimiento constante.",
         soundcloud: "https://soundcloud.com/dstrkt_dj?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
     },
     {
         nombre: "Do",
-        imagen: "Assets/artistas/do.jpg",
+        imagen: "Assets/artistas/do.JPG",
         descripcion: "Mezclas energéticas que fusionan el Groove con el Polegroup. Do garantiza una experiencia de alto voltaje en cada presentación.",
         soundcloud: "https://soundcloud.com/diazz-845252555?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
     },
     {
         nombre: "A.L.L",
-        imagen: "Assets/artistas/all.jpg",
+        imagen: "Assets/artistas/all.JPG",
         descripcion: "Explorador de trance profundo y conexión auténtica. A.L.L fusiona ritmos envolventes y melodías experimentales en un viaje mental y liberador.",
         soundcloud: "https://soundcloud.com/juan-manuel-franco-404168115?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
     },
