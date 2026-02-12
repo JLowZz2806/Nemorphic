@@ -72,27 +72,71 @@ window.onclick = (e) => {
 // ARTISTAS (ya existente)
 // ===============================
 const artistas = [
-    { nombre: "J Løwℤ", soundcloud: "https://soundcloud.com/juan-jose-lopez-775910207?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" },
-    { nombre: "DSTRKT", soundcloud: "https://soundcloud.com/dstrkt_dj?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" },
-    { nombre: "Do", soundcloud: "https://soundcloud.com/diazz-845252555?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" },
-    { nombre: "A.L.L", soundcloud: "https://soundcloud.com/juan-manuel-franco-404168115?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" },
-    { nombre: "ECTASY", soundcloud: "https://soundcloud.com/yung-ghost-442183122?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing" },
+    {
+        nombre: "J Løwℤ",
+        imagen: "Assets/artistas/jlowz.jpg", // 📸 CAMBIA ESTA RUTA POR LA FOTO REAL
+        descripcion: "Arquitecto de expansión profunda y tensión contenida. J Løwℤ fusiona capas atmosféricas y graves oscuros en un viaje inmersivo.", // 📝 AGREGA AQUÍ LA DESCRIPCIÓN
+        soundcloud: "https://soundcloud.com/juan-jose-lopez-775910207?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
+    },
+    {
+        nombre: "DSTRKT",
+        imagen: "Assets/artistas/dstrkt.jpg",
+        descripcion: "Arquitecto de progresiones hipnóticas y atmósferas mentales. DSTRKT transforma la pista en un espacio de trance envolvente y movimiento constante.",
+        soundcloud: "https://soundcloud.com/dstrkt_dj?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
+    },
+    {
+        nombre: "Do",
+        imagen: "Assets/artistas/do.jpg",
+        descripcion: "Mezclas energéticas que fusionan el Groove con el Polegroup. Do garantiza una experiencia de alto voltaje en cada presentación.",
+        soundcloud: "https://soundcloud.com/diazz-845252555?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
+    },
+    {
+        nombre: "A.L.L",
+        imagen: "Assets/artistas/all.jpg",
+        descripcion: "Explorador de trance profundo y conexión auténtica. A.L.L fusiona ritmos envolventes y melodías experimentales en un viaje mental y liberador.",
+        soundcloud: "https://soundcloud.com/juan-manuel-franco-404168115?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
+    },
+    {
+        nombre: "ECTASY",
+        imagen: "Assets/artistas/ectasy.jpeg",
+        descripcion: "Ritmos rotos y experimentación. ECTASY rompe los esquemas tradicionales para ofrecer una propuesta fresca y audaz.",
+        soundcloud: "https://soundcloud.com/yung-ghost-442183122?utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
+    },
 ];
 
 const contenedorArtistas = document.getElementById("lista-artistas");
+
+// Ordenar alfabéticamente por nombre
+artistas.sort((a, b) => a.nombre.localeCompare(b.nombre));
 
 if (contenedorArtistas) {
     for (let i = 0; i < artistas.length; i++) {
         let div = document.createElement("div");
         div.className = "col-md-4";
         div.innerHTML = `
-      <div class="card bg-dark text-light h-100">
-        <div class="card-body text-center">
-          <h5 class="card-title">${artistas[i].nombre}</h5>
-          <a href="${artistas[i].soundcloud}" target="_blank" rel="noopener noreferrer"
-             class="btn btn-sm btn-outline-info">
-            SoundCloud
-          </a>
+      <div class="card bg-dark text-light h-100 artist-card-nemorphic">
+        <div class="card-body text-center d-flex flex-column align-items-center">
+            
+            <!-- FOTO DEL DJ -->
+            <div class="artist-img-container mb-3">
+                <img src="${artistas[i].imagen}" alt="${artistas[i].nombre}" class="artist-img">
+            </div>
+
+            <h5 class="card-title mb-2">${artistas[i].nombre}</h5>
+
+            <!-- DESCRIPCIÓN DESPLEGABLE -->
+            <details class="artist-details mb-3">
+                <summary class="btn-ver-info">Ver Info <span>▼</span></summary>
+                <div class="artist-bio mt-2">
+                    <p>${artistas[i].descripcion}</p>
+                </div>
+            </details>
+
+            <!-- DOTÓN SOUNDCLOUD (mt-auto para empujarlo al fondo si el card crece) -->
+            <a href="${artistas[i].soundcloud}" target="_blank" rel="noopener noreferrer"
+                class="btn btn-sm btn-outline-info mt-auto">
+                SoundCloud
+            </a>
         </div>
       </div>
     `;
