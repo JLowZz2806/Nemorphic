@@ -152,15 +152,31 @@ if (contenedorArtistas) {
     if (!cont) return;
 
     // 🎵 Lista de lanzamientos (agrega más fácilmente)
-    const lanzamientos = [
-        {
-            titulo: "Nemorphic Session #1 - Nyrae",
-            embed: "https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/nemorphic/nms-001-nyrae&color=%236a0dad"
-        },
-        {
-            titulo: "Nemorphic Session #2 - A.L.L B2B DO",
-            embed: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2258242973&color=%23051e36&auto"
-        }
+      const lanzamientos = [
+    {
+      titulo: "Nemorphic Session #1 - Nyrae",
+      embed: "https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/nemorphic/nms-001-nyrae&color=%236a0dad"
+    },
+    {
+      titulo: "Nemorphic Session #2 - A.L.L B2B DO",
+      embed: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2258242973&color=%23051e36&auto"
+    },
+    {
+      titulo: "Nemorphic Session #3 - /// N W M N",
+      embed: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2271021080&color=%23051e36&auto"
+    },
+    {
+      titulo: "Nemorphic Session #4 - Hazrloner",
+      embed: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2279106629&color=%23051e36&auto"
+    },
+    {
+      titulo: "Nemorphic Session #5 - DSTRKT - Residente Nemorphic",
+      embed: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2288759009&color=%23051e36&auto"
+    },
+    {
+      titulo: "Nemorphic Session #2 - Jacobo Gringberg",
+      embed: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2296846181&color=%23051e36&auto"
+    }
 
         //  Para agregar más:
         // {
