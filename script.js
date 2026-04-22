@@ -174,8 +174,12 @@ if (contenedorArtistas) {
       embed: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2288759009&color=%23051e36&auto"
     },
     {
-      titulo: "Nemorphic Session #2 - Jacobo Gringberg",
+      titulo: "Nemorphic Session #6 - Jacobo Gringberg",
       embed: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2296846181&color=%23051e36&auto"
+    },
+    {
+      titulo: "Nemorphic Session #7 - ECTASY",
+      embed: "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A2304731705&color=%23051e36&auto"
     }
 
         //  Para agregar más:
