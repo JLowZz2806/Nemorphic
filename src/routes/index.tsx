@@ -143,7 +143,11 @@ function Index() {
       <main>
         {/* INICIO */}
         <section id="inicio" className="nm-hero nm-grain">
-          <img src={HERO_BG} alt="" aria-hidden="true" className="nm-hero-bg" fetchPriority="high" />
+          <div
+            className="nm-hero-bg"
+            aria-hidden="true"
+            style={{ backgroundImage: `url("${HERO_BG}")` }}
+          />
           <div className="nm-hero-veil" aria-hidden="true" />
           <div className="nm-hero-inner">
             <img
