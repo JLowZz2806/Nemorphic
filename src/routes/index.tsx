@@ -215,6 +215,11 @@ function Index() {
                         className="nm-artist-img"
                         loading="lazy"
                         decoding="async"
+                        ref={(el) => {
+                          if (el && el.complete && el.naturalWidth === 0) {
+                            setFallbacks((prev) => ({ ...prev, [artista.nombre]: true }));
+                          }
+                        }}
                         onError={() =>
                           setFallbacks((prev) => ({ ...prev, [artista.nombre]: true }))
                         }
