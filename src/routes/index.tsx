@@ -89,15 +89,17 @@ function Index() {
               <span className="nm-display text-lg tracking-wide">Nemorphic</span>
             </a>
 
-            <button
-              type="button"
-              className="nm-btn px-4 py-2 lg:hidden"
-              aria-expanded={menuOpen}
-              aria-controls="nm-menu"
-              onClick={() => setMenuOpen((v) => !v)}
-            >
-              {menuOpen ? "Cerrar" : "Menú"}
-            </button>
+            <div className="lg:hidden">
+              <button
+                type="button"
+                className="nm-btn px-4 py-2"
+                aria-expanded={menuOpen}
+                aria-controls="nm-menu"
+                onClick={() => setMenuOpen((v) => !v)}
+              >
+                {menuOpen ? "Cerrar" : "Menú"}
+              </button>
+            </div>
 
             <div
               id="nm-menu"
