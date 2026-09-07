@@ -13,13 +13,13 @@ import { HERO_BG, LOGO, artistas, lanzamientos } from "../data/nemorphic";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Nemorphic — Sello techno underground" },
+      { title: "Nemorphic - Techno label" },
       {
         name: "description",
         content:
           "Nemorphic es un sello techno que impulsa artistas locales y emergentes: sesiones, lanzamientos y cultura underground. Más que groove, cultura.",
       },
-      { property: "og:title", content: "Nemorphic — Sello techno underground" },
+      { property: "og:title", content: "Nemorphic - Techno label" },
       {
         property: "og:description",
         content: "Más que groove, cultura. Sesiones, artistas y lanzamientos del sello Nemorphic.",
@@ -44,6 +44,7 @@ function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [modal, setModal] = useState<null | "noticias" | "tienda" | "contacto">(null);
   const [fallbacks, setFallbacks] = useState<Record<string, boolean>>({});
+  const [releasesBgOffset, setReleasesBgOffset] = useState(0);
 
   useEffect(() => {
     document.body.classList.add("nm-body");
@@ -55,10 +56,22 @@ function Index() {
       const inicio = document.getElementById("inicio");
       const altura = inicio ? inicio.offsetHeight : window.innerHeight;
       setNavVisible(window.scrollY > altura);
+
+      const section = document.getElementById("lanzamientos");
+      if (!section) return;
+
+      const rect = section.getBoundingClientRect();
+      const offset = Math.max(-120, Math.min(120, (window.innerHeight - rect.top) * 0.18));
+      setReleasesBgOffset(offset);
     };
+
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
   }, []);
 
   const handleNewsletter = (e: FormEvent<HTMLFormElement>) => {
@@ -154,19 +167,16 @@ function Index() {
               src={LOGO}
               alt="Logo Nemorphic"
               className="nm-logo-mark nm-hero-logo mx-auto"
-              width={118}
-              height={118}
+              width={138}
+              height={138}
             />
             <h1 className="nm-display nm-hero-title">Bienvenidos a Nemorphic</h1>
             <p className="nm-hero-tagline">Más que groove, cultura.</p>
           </div>
-          <span className="nm-scroll-cue" aria-hidden="true">
-            Scroll
-          </span>
         </section>
 
         {/* QUIÉNES SOMOS */}
-        <section id="quienes" className="nm-section nm-grain">
+        <section id="quienes" className="nm-section nm-section--about nm-grain">
           <div className="nm-container">
             <p className="nm-eyebrow">01 — Sello</p>
             <h2 className="nm-display nm-section-title mt-3">Quiénes somos</h2>
@@ -176,29 +186,57 @@ function Index() {
               <article className="nm-panel">
                 <h3 className="nm-subtitle">Visión</h3>
                 <p className="nm-body-text mt-3">
-                  Ser un sello que impulse a los artistas locales y emergentes del techno, reconocido
-                  por ofrecer un espacio auténtico donde la innovación sonora y la cultura se
-                  fusionen. Aspiramos a consolidarnos como una comunidad sólida que inspire, conecte,
-                  sienta y expanda la escena, llevando la música más allá de la pista de baile y
-                  fortaleciendo la identidad del movimiento techno a nivel global.
+                  Consolidar a Nemorphic como un referente del techno underground en Colombia y más
+                  allá, creando un ecosistema donde la innovación sonora, la comunidad y la cultura
+                  se articulen para ampliar la escena electrónica con identidad, autenticidad y
+                  proyección internacional. Aspiramos a ser un espacio donde el arte, la música y la
+                  cultura convergen para redefinir la experiencia sonora contemporánea.
                 </p>
               </article>
 
               <article className="nm-panel">
                 <h3 className="nm-subtitle">Misión</h3>
                 <p className="nm-body-text mt-3">
-                  Nuestra misión es distribuir música techno, crear eventos underground y fortalecer
-                  una comunidad auténtica que apoye a los artistas locales y emergentes, conectando
-                  con el público general por medio de la musica y la cultura y expandiendo la cultura
-                  electrónica.
+                  Impulsar artistas locales y emergentes del techno a través de la difusión,
+                  producción y curaduría de contenido de alto valor cultural y artístico. A través de
+                  sesiones, lanzamientos y experiencias de comunidad, buscamos fortalecer una escena
+                  auténtica, conectar a la audiencia con propuestas de alta calidad y contribuir al
+                  crecimiento sostenido de la cultura electrónica en su forma más esencial.
                 </p>
               </article>
+            </div>
+
+            <div className="nm-inline-socials" aria-label="Redes sociales de Nemorphic">
+              <a
+                href="https://www.instagram.com/nemorphic_th?igsh=N3pvOXdjbmdvZ3Rx"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+              >
+                <InstagramIcon />
+              </a>
+              <a
+                href="https://on.soundcloud.com/f8F7NRYeYPHd3yvRDR"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="SoundCloud"
+              >
+                <SoundcloudIcon />
+              </a>
+              <a
+                href="https://www.youtube.com/channel/UC4OLVzfXHWhQ_wk1FYzOUwg"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+              >
+                <YoutubeIcon />
+              </a>
             </div>
           </div>
         </section>
 
         {/* ARTISTAS */}
-        <section id="artistas" className="nm-section nm-grain">
+        <section id="artistas" className="nm-section nm-section--artists nm-grain">
           <div className="nm-container">
             <p className="nm-eyebrow">02 — Roster</p>
             <h2 className="nm-display nm-section-title mt-3">Artistas</h2>
@@ -259,13 +297,17 @@ function Index() {
         </section>
 
         {/* LANZAMIENTOS */}
-        <section id="lanzamientos" className="nm-section nm-grain">
-          <div className="nm-container">
+        <section id="lanzamientos" className="nm-section nm-section--releases nm-grain">
+          <div className="nm-releases-fixed-bg" aria-hidden="true">
+            <div className="nm-releases-bg" style={{ transform: `translate3d(0, ${releasesBgOffset}px, 0)` }} />
+          </div>
+
+          <div className="nm-container nm-releases-content">
             <p className="nm-eyebrow">03 — Catálogo</p>
             <h2 className="nm-display nm-section-title mt-3">Lanzamientos</h2>
             <div className="nm-rule" />
 
-            <div className="mt-8">
+            <div className="mt-8 flex justify-center">
               <a
                 href="https://on.soundcloud.com/aFdfOtNl7lBho5Xygy"
                 target="_blank"
@@ -277,19 +319,21 @@ function Index() {
               </a>
             </div>
 
-            <div className="mt-12 grid gap-6 lg:grid-cols-2">
+            <div className="mt-12 grid gap-6 lg:grid-cols-1">
               {lanzamientos.map((item) => (
                 <article key={item.titulo} className="nm-panel">
                   <h3 className="nm-release-title">{item.titulo}</h3>
-                  <iframe
-                    title={item.titulo}
-                    className="nm-release-frame"
-                    scrolling="no"
-                    frameBorder="no"
-                    allow="autoplay"
-                    loading="lazy"
-                    src={item.embed}
-                  />
+                  <div className="nm-release-embed-shell">
+                    <iframe
+                      title={item.titulo}
+                      className="nm-release-frame nm-release-frame--playlist"
+                      scrolling="no"
+                      frameBorder="no"
+                      allow="autoplay; encrypted-media"
+                      loading="lazy"
+                      src={item.embed}
+                    />
+                  </div>
                 </article>
               ))}
             </div>
@@ -302,7 +346,38 @@ function Index() {
             <p className="nm-eyebrow">04 — Agenda</p>
             <h2 className="nm-display nm-section-title mt-3">Eventos</h2>
             <div className="nm-rule" />
-            <p className="nm-body-text mt-8 text-xl">Próximamente...</p>
+
+            <article className="nm-event-feature mt-12">
+              <div className="nm-event-poster-wrap">
+                <img
+                  src="/Assets/Flyer%20UMBRA.jpg"
+                  alt="Flyer del evento Umbra, sábado 3 de octubre de 8 PM a 2 AM en Épica, Avenida Paralela #55-35"
+                  className="nm-event-poster"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+
+              <div className="nm-event-info">
+                <p className="nm-eyebrow">Próximo evento</p>
+                <h3 className="nm-display nm-event-title">UMBRA</h3>
+                <p className="nm-event-tagline">Aquí no se escucha. Se siente.</p>
+                <dl className="nm-event-details">
+                  <div>
+                    <dt>Fecha</dt>
+                    <dd>Sábado 3 de octubre</dd>
+                  </div>
+                  <div>
+                    <dt>Horario</dt>
+                    <dd>8 PM — 2 AM</dd>
+                  </div>
+                  <div>
+                    <dt>Lugar</dt>
+                    <dd>Épica — Av. Paralela #55-35</dd>
+                  </div>
+                </dl>
+              </div>
+            </article>
           </div>
         </section>
       </main>
@@ -416,40 +491,66 @@ function Index() {
       {/* FOOTER */}
       <footer className="nm-footer nm-grain">
         <div className="nm-container">
-          <div className="nm-social">
-            <a
-              href="https://www.instagram.com/nemorphic_th?igsh=N3pvOXdjbmdvZ3Rx"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-            >
-              <InstagramIcon />
-            </a>
-            <a
-              href="https://on.soundcloud.com/f8F7NRYeYPHd3yvRDR"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="SoundCloud"
-            >
-              <SoundcloudIcon />
-            </a>
-            <a
-              href="https://www.youtube.com/channel/UC4OLVzfXHWhQ_wk1FYzOUwg"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="YouTube"
-            >
-              <YoutubeIcon />
-            </a>
+          <div className="nm-footer-top">
+            <div className="nm-footer-brand">
+              <img src={LOGO} alt="Logo Nemorphic" width={52} height={52} className="nm-logo-mark" />
+              <div>
+                <span className="nm-display nm-footer-brand-name">Nemorphic</span>
+                <p className="nm-footer-tag">Techno label / Más que groove, cultura</p>
+                <div className="nm-social" aria-label="Redes sociales de Nemorphic">
+                  <a
+                    href="https://www.instagram.com/nemorphic_th?igsh=N3pvOXdjbmdvZ3Rx"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Instagram"
+                  >
+                    <InstagramIcon />
+                  </a>
+                  <a
+                    href="https://on.soundcloud.com/f8F7NRYeYPHd3yvRDR"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="SoundCloud"
+                  >
+                    <SoundcloudIcon />
+                  </a>
+                  <a
+                    href="https://www.youtube.com/channel/UC4OLVzfXHWhQ_wk1FYzOUwg"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="YouTube"
+                  >
+                    <YoutubeIcon />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="nm-footer-links">
+              <h3>Navegación</h3>
+              <ul className="nm-footer-list">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#quienes">Quiénes somos</a></li>
+                <li><a href="#artistas">Artistas</a></li>
+                <li><a href="#lanzamientos">Lanzamientos</a></li>
+              </ul>
+            </div>
+
+            <div className="nm-footer-contact">
+              <h3>Contacto</h3>
+              <a href="mailto:nemorphictechno@gmail.com">nemorphictechno@gmail.com</a>
+              <a href="https://wa.me/573186121615" target="_blank" rel="noopener noreferrer">
+                318 612 1615
+              </a>
+              <a href="https://wa.me/573026369050" target="_blank" rel="noopener noreferrer">
+                302 636 9050
+              </a>
+            </div>
           </div>
 
-          <p className="nm-body-text mt-8 text-sm">
-            © 2025 Nemorphic | Todos los derechos reservados
-          </p>
-          <p className="nm-body-text mt-2 text-sm">
-            📧 nemorphictechno@gmail.com <br />
-            📞 318 612 1615 | 302 636 9050
-          </p>
+          <div className="nm-footer-bottom">
+            <p className="nm-footer-copy">© 2025 Nemorphic — Todos los derechos reservados</p>
+          </div>
         </div>
       </footer>
     </>

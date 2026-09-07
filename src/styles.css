@@ -156,7 +156,8 @@
   --nm-pink-strong: #d29ccc;
   --nm-white: #ffffff;
   --nm-font-display: "DM Serif Display", Georgia, serif;
-  --nm-font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --nm-font-secondary: "Manrope", "Segoe UI", sans-serif;
+  --nm-font-body: var(--nm-font-secondary);
 }
 
 html {
@@ -168,15 +169,29 @@ body.nm-body {
   background-color: var(--nm-black);
   color: var(--nm-white);
   font-family: var(--nm-font-body);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.7;
   letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
-.nm-display {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.nm-display,
+.nm-section-title,
+.nm-subtitle,
+.nm-artist-name,
+.nm-release-title,
+.nm-footer-brand-name {
   font-family: var(--nm-font-display);
+}
+
+.nm-display {
   font-weight: 400;
   line-height: 1.08;
   letter-spacing: 0.01em;
@@ -271,12 +286,13 @@ body.nm-body {
 
 .nm-hero-bg {
   position: absolute;
-  inset: 0;
+  inset: -4% -6%;
   background-repeat: no-repeat;
-  background-size: 330% auto;
-  background-position: 50% 2%;
+  background-size: cover;
+  background-position: center center;
+  transform: scale(1.08);
+  animation: nm-drift 18s ease-in-out infinite alternate;
 }
-
 
 .nm-hero-veil {
   position: absolute;
@@ -308,38 +324,56 @@ body.nm-body {
   border-radius: 999px;
   object-fit: cover;
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
-  outline: 1px solid rgba(233, 211, 236, 0.35);
-  outline-offset: 3px;
+  background: transparent;
+  border: none;
+  outline: none;
 }
 
 .nm-hero-logo {
-  width: clamp(84px, 9vw, 118px);
-  height: clamp(84px, 9vw, 118px);
+  width: clamp(104px, 10vw, 138px);
+  height: clamp(104px, 10vw, 138px);
   margin-bottom: clamp(2.5rem, 8vh, 6rem);
-  animation: nm-float 7s ease-in-out infinite;
+  animation: nm-float 9s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes nm-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%, 100% { transform: translateY(0px); }
+  25% { transform: translateY(-8px); }
+  50% { transform: translateY(-14px); }
+  75% { transform: translateY(-8px); }
 }
 
-.nm-scroll-cue {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-  font-size: 0.68rem;
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
+@keyframes nm-drift {
+  0% { transform: scale(1.08) translateX(-2%) translateY(0); }
+  25% { transform: scale(1.1) translateX(1.5%) translateY(0.5%); }
+  50% { transform: scale(1.12) translateX(2.5%) translateY(-0.8%); }
+  75% { transform: scale(1.1) translateX(-1%) translateY(0.7%); }
+  100% { transform: scale(1.08) translateX(1%) translateY(-0.4%); }
 }
 
 /* SECCIONES --------------------------------------------- */
 .nm-section {
   position: relative;
   padding: clamp(4.5rem, 11vh, 8rem) 0;
+}
+
+.nm-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 4vw;
+  right: 4vw;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(210, 156, 204, 0.2), transparent);
+}
+
+.nm-section--about {
+  padding-bottom: clamp(2.25rem, 5vh, 3.75rem);
+}
+
+.nm-section--artists {
+  padding-top: clamp(2.25rem, 5vh, 3.75rem);
 }
 
 .nm-container {
@@ -386,6 +420,48 @@ body.nm-body {
   border-color: rgba(210, 156, 204, 0.34);
 }
 
+.nm-inline-socials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(210, 156, 204, 0.14);
+  width: 100%;
+}
+
+.nm-inline-socials a {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(210, 156, 204, 0.18);
+  background: rgba(255, 255, 255, 0.01);
+  transition: transform 0.25s ease, border-color 0.25s ease, color 0.25s ease, background 0.25s ease;
+}
+
+.nm-inline-socials a:hover,
+.nm-inline-socials a:focus-visible {
+  color: var(--nm-white);
+  border-color: rgba(210, 156, 204, 0.4);
+  background: rgba(63, 21, 128, 0.25);
+  transform: translateY(-2px);
+}
+
+.nm-inline-socials svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 768px) {
+  .nm-inline-socials {
+    justify-content: center;
+  }
+}
+
 /* ARTISTAS ---------------------------------------------- */
 .nm-artist-card {
   display: flex;
@@ -397,8 +473,8 @@ body.nm-body {
 
 .nm-artist-img-wrap {
   position: relative;
-  width: 148px;
-  height: 148px;
+  width: 170px;
+  height: 170px;
   border-radius: 999px;
   overflow: hidden;
   background: radial-gradient(circle at 30% 25%, var(--nm-violet), var(--nm-ink) 72%);
@@ -519,7 +595,40 @@ body.nm-body {
 
 .nm-btn--solid:hover { transform: translateY(-2px); }
 
-/* LANZAMIENTOS ------------------------------------------ */
+.nm-section--releases {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.1rem, 2.2vw, 2rem) 0;
+}
+
+.nm-releases-fixed-bg {
+  position: absolute;
+  inset: 0.85rem 0.85rem 0.85rem 0.85rem;
+  border-radius: 1.15rem;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nm-releases-bg {
+  position: absolute;
+  inset: -18% -12% -18% -12%;
+  background-image: url("/Assets/seccionlanzamientos.png");
+  background-repeat: no-repeat;
+  background-position: center 45%;
+  background-size: cover;
+  opacity: 0.9;
+  filter: saturate(1.15) brightness(0.8);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.12s linear;
+}
+
+.nm-releases-content {
+  position: relative;
+  z-index: 1;
+  padding-inline: clamp(0.75rem, 1.8vw, 1.5rem);
+}
+
 .nm-release-title {
   font-family: var(--nm-font-display);
   font-size: 1.25rem;
@@ -532,6 +641,91 @@ body.nm-body {
   border: 0;
   border-radius: 2px;
   display: block;
+}
+
+.nm-release-embed-shell {
+  background: rgba(8, 7, 13, 0.88);
+  border: 1px solid rgba(215, 184, 255, 0.14);
+  border-radius: 18px;
+  padding: 0.45rem;
+  background: linear-gradient(180deg, rgba(16, 12, 23, 0.95), rgba(8, 7, 13, 0.9));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.nm-release-frame--playlist {
+  height: 500px;
+  border-radius: 12px;
+  background: #09080d;
+  display: block;
+}
+
+/* EVENTOS ----------------------------------------------- */
+.nm-event-feature {
+  display: grid;
+  grid-template-columns: minmax(240px, 420px) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: center;
+  max-width: 1040px;
+  margin-inline: auto;
+}
+
+.nm-event-poster-wrap {
+  padding: 0.65rem;
+  background: linear-gradient(145deg, rgba(210, 156, 204, 0.3), rgba(63, 21, 128, 0.16));
+  border: 1px solid rgba(210, 156, 204, 0.2);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+}
+
+.nm-event-poster {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.nm-event-info {
+  padding-block: 1rem;
+}
+
+.nm-event-title {
+  margin-top: 0.7rem;
+  font-size: clamp(3.5rem, 9vw, 7.5rem);
+  color: var(--nm-pink);
+  line-height: 0.9;
+}
+
+.nm-event-tagline {
+  margin-top: 1.2rem;
+  color: rgba(255, 255, 255, 0.78);
+  font-family: var(--nm-font-display);
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+  font-style: italic;
+}
+
+.nm-event-details {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  border-top: 1px solid rgba(210, 156, 204, 0.22);
+  padding-top: 1.5rem;
+}
+
+.nm-event-details div {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 1rem;
+}
+
+.nm-event-details dt {
+  color: var(--nm-pink-strong);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.nm-event-details dd {
+  color: rgba(255, 255, 255, 0.84);
 }
 
 /* MODALES ----------------------------------------------- */
@@ -634,13 +828,107 @@ body.nm-body {
 
 /* FOOTER ------------------------------------------------ */
 .nm-footer {
+  position: relative;
   border-top: 1px solid rgba(210, 156, 204, 0.14);
-  background: #030206;
+  background: linear-gradient(180deg, rgba(3, 2, 6, 0.98), rgba(11, 7, 17, 1));
   padding: clamp(2.5rem, 6vh, 4rem) 0 2.5rem;
+}
+
+.nm-footer-top {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1.5fr 0.9fr 1fr;
+  align-items: start;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(210, 156, 204, 0.14);
+}
+
+.nm-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+}
+
+.nm-footer-brand img {
+  width: 52px;
+  height: 52px;
+}
+
+.nm-footer-brand-name {
+  display: block;
+  font-size: clamp(1.7rem, 2vw, 2.3rem);
+  color: var(--nm-white);
+  line-height: 1;
+}
+
+.nm-footer-tag {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.nm-footer-links,
+.nm-footer-contact {
+  text-align: left;
+}
+
+.nm-footer-links h3,
+.nm-footer-contact h3 {
+  margin-bottom: 0.8rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--nm-pink-strong);
+}
+
+.nm-footer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.nm-footer-list a,
+.nm-footer-contact a {
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 0.25s ease;
+}
+
+.nm-footer-list a:hover,
+.nm-footer-contact a:hover,
+.nm-footer-list a:focus-visible,
+.nm-footer-contact a:focus-visible {
+  color: var(--nm-white);
+}
+
+.nm-footer-contact {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.nm-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding-top: 1.5rem;
+}
+
+.nm-footer-copy {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.58);
   text-align: center;
 }
 
 .nm-social {
+  margin-top: 1.4rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -667,6 +955,41 @@ body.nm-body {
 }
 
 .nm-social svg { width: 20px; height: 20px; }
+
+@media (max-width: 768px) {
+  .nm-event-feature {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    max-width: 520px;
+  }
+
+  .nm-event-info {
+    padding-block: 0;
+  }
+
+  .nm-footer-top {
+    grid-template-columns: 1fr;
+  }
+
+  .nm-footer-brand,
+  .nm-footer-links,
+  .nm-footer-contact {
+    text-align: center;
+  }
+
+  .nm-footer-brand {
+    justify-content: center;
+  }
+
+  .nm-footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .nm-footer-copy {
+    text-align: center;
+  }
+}
 
 :focus-visible {
   outline: 2px solid var(--nm-pink-strong);
