@@ -6,3 +6,7 @@ pnpm-lock.yaml
 package-lock.json
 bun.lock
 routeTree.gen.ts
+
+# Las skills llevan fragmentos de código ilustrativos: Prettier los reformatea
+# y los rompe (no son archivos reales).
+.claude/skills

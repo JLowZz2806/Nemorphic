@@ -10,33 +10,61 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPanelRoute = AdminPanelRouteImport.update({
+  id: '/admin/_panel',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPanelIndexRoute = AdminPanelIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminPanelRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminPanelRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/': typeof AdminPanelIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin': typeof AdminPanelIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin/_panel': typeof AdminPanelRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/_panel/': typeof AdminPanelIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/admin' | '/admin/login' | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/admin/login' | '/admin'
+  id: '__root__' | '/' | '/admin/_panel' | '/admin/login' | '/admin/_panel/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminPanelRoute: typeof AdminPanelRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +76,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/_panel': {
+      id: '/admin/_panel'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminPanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/_panel/': {
+      id: '/admin/_panel/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminPanelIndexRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
   }
 }
 
+interface AdminPanelRouteChildren {
+  AdminPanelIndexRoute: typeof AdminPanelIndexRoute
+}
+
+const AdminPanelRouteChildren: AdminPanelRouteChildren = {
+  AdminPanelIndexRoute: AdminPanelIndexRoute,
+}
+
+const AdminPanelRouteWithChildren = AdminPanelRoute._addFileChildren(
+  AdminPanelRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminPanelRoute: AdminPanelRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

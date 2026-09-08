@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run typecheck)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run format)",
+      "Bash(npm run smoke)",
+      "Bash(npm run smoke:*)",
+      "Bash(npm run check)",
+      "Bash(npm run build)",
+      "Bash(npm run build:dev)",
+      "Bash(npm run dev)",
+      "Bash(npm install)",
+      "Bash(npm ci)",
+      "Bash(npm ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node scripts/*)",
+      "Bash(node -e:*)",
+      "Bash(netstat:*)",
+      "Bash(npx prettier:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(sed -n:*)",
+      "Bash(curl -s http://localhost:*)",
+      "Read(./**)",
+      "Edit(./**)",
+      "Write(./**)"
+    ],
+    "deny": [
+      "Read(./.dev.vars)",
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.development)",
+      "Read(./.env.production)",
+      "Edit(./src/routeTree.gen.ts)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git rebase:*)",
+      "Bash(git commit --amend:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(npx wrangler deploy:*)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(npm install:*)",
+      "Bash(npx wrangler:*)"
+    ]
+  }
+}

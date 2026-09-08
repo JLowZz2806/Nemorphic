@@ -88,7 +88,10 @@ function Index() {
     <>
       {/* NAVBAR */}
       <header>
-        <nav className={`nm-nav ${navVisible ? "is-visible" : ""}`} aria-label="Navegación principal">
+        <nav
+          className={`nm-nav ${navVisible ? "is-visible" : ""}`}
+          aria-label="Navegación principal"
+        >
           <div className="nm-container flex items-center justify-between gap-4 py-3">
             <a href="#inicio" className="flex items-center gap-3">
               <img
@@ -198,10 +201,11 @@ function Index() {
                 <h3 className="nm-subtitle">Misión</h3>
                 <p className="nm-body-text mt-3">
                   Impulsar artistas locales y emergentes del techno a través de la difusión,
-                  producción y curaduría de contenido de alto valor cultural y artístico. A través de
-                  sesiones, lanzamientos y experiencias de comunidad, buscamos fortalecer una escena
-                  auténtica, conectar a la audiencia con propuestas de alta calidad y contribuir al
-                  crecimiento sostenido de la cultura electrónica en su forma más esencial.
+                  producción y curaduría de contenido de alto valor cultural y artístico. A través
+                  de sesiones, lanzamientos y experiencias de comunidad, buscamos fortalecer una
+                  escena auténtica, conectar a la audiencia con propuestas de alta calidad y
+                  contribuir al crecimiento sostenido de la cultura electrónica en su forma más
+                  esencial.
                 </p>
               </article>
             </div>
@@ -299,7 +303,10 @@ function Index() {
         {/* LANZAMIENTOS */}
         <section id="lanzamientos" className="nm-section nm-section--releases nm-grain">
           <div className="nm-releases-fixed-bg" aria-hidden="true">
-            <div className="nm-releases-bg" style={{ transform: `translate3d(0, ${releasesBgOffset}px, 0)` }} />
+            <div
+              className="nm-releases-bg"
+              style={{ transform: `translate3d(0, ${releasesBgOffset}px, 0)` }}
+            />
           </div>
 
           <div className="nm-container nm-releases-content">
@@ -493,7 +500,13 @@ function Index() {
         <div className="nm-container">
           <div className="nm-footer-top">
             <div className="nm-footer-brand">
-              <img src={LOGO} alt="Logo Nemorphic" width={52} height={52} className="nm-logo-mark" />
+              <img
+                src={LOGO}
+                alt="Logo Nemorphic"
+                width={52}
+                height={52}
+                className="nm-logo-mark"
+              />
               <div>
                 <span className="nm-display nm-footer-brand-name">Nemorphic</span>
                 <p className="nm-footer-tag">Techno label / Más que groove, cultura</p>
@@ -529,10 +542,18 @@ function Index() {
             <div className="nm-footer-links">
               <h3>Navegación</h3>
               <ul className="nm-footer-list">
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#quienes">Quiénes somos</a></li>
-                <li><a href="#artistas">Artistas</a></li>
-                <li><a href="#lanzamientos">Lanzamientos</a></li>
+                <li>
+                  <a href="#inicio">Inicio</a>
+                </li>
+                <li>
+                  <a href="#quienes">Quiénes somos</a>
+                </li>
+                <li>
+                  <a href="#artistas">Artistas</a>
+                </li>
+                <li>
+                  <a href="#lanzamientos">Lanzamientos</a>
+                </li>
               </ul>
             </div>
 

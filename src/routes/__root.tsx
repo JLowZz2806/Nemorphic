@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -87,16 +88,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Nemorphic" },
       {
         property: "og:description",
-        content:
-          "Más que groove, cultura. Sesiones, artistas y lanzamientos del sello Nemorphic.",
+        content: "Más que groove, cultura. Sesiones, artistas y lanzamientos del sello Nemorphic.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Nemorphic" },
       {
         name: "twitter:description",
-        content:
-          "Más que groove, cultura. Sesiones, artistas y lanzamientos del sello Nemorphic.",
+        content: "Más que groove, cultura. Sesiones, artistas y lanzamientos del sello Nemorphic.",
       },
     ],
     links: [
@@ -104,7 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@300;400;500&display=swap",
       },
       {
         rel: "stylesheet",
@@ -140,6 +139,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <Toaster theme="dark" position="bottom-right" richColors closeButton />
     </QueryClientProvider>
   );
 }

@@ -49,7 +49,11 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         <button type="button" className="nm-modal-close" onClick={onClose} aria-label="Cerrar">
           <CloseIcon />
         </button>
-        <h2 id={titleId} className="nm-display" style={{ fontSize: "2rem", color: "var(--nm-pink)" }}>
+        <h2
+          id={titleId}
+          className="nm-display"
+          style={{ fontSize: "2rem", color: "var(--nm-pink)" }}
+        >
           {title}
         </h2>
         <div className="nm-rule" style={{ marginBottom: "1.75rem" }} />

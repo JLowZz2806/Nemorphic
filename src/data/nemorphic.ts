@@ -70,4 +70,4 @@ export const lanzamientos: Lanzamiento[] = [
 ];
 
 export const LOGO = "/Assets/logo nemorphic.png";
-export const HERO_BG = "/Assets/inicio.png";
+export const HERO_BG = "/Assets/inicio.jpg";

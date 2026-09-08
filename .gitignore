@@ -20,6 +20,15 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Variables de entorno: el servidor de desarrollo lee .env, y ahí van las claves
+# de Supabase y del panel de admin. NUNCA deben llegar a GitHub.
+.env
+.env.*
+!.env.example
+
+# Ajustes personales de cada desarrollador para Claude Code
+.claude/settings.local.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
