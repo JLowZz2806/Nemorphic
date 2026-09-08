@@ -53,10 +53,6 @@
       "Bash(git reset --hard:*)",
       "Bash(npx wrangler deploy:*)"
     ],
-    "ask": [
-      "Bash(git push:*)",
-      "Bash(npm install:*)",
-      "Bash(npx wrangler:*)"
-    ]
+    "ask": ["Bash(git push:*)", "Bash(npm install:*)", "Bash(npx wrangler:*)"]
   }
 }
