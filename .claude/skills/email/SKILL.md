@@ -26,10 +26,34 @@ se puede comprar y apuntar desde el propio Vercel). No es un capricho estético:
 - Desbloquea **Resend**, que es la mejor opción de las disponibles: API muy simple,
   buen tier gratuito, endpoint de envío por lotes.
 
-**Mientras no haya dominio**, la opción viable es un proveedor que permita validar
-solo una dirección remitente. **Brevo** es el más razonable para este caso (permite
-remitente validado sin dominio y su tier gratuito da margen diario suficiente para
-una lista pequeña). Confirma los límites vigentes en su web antes de prometerlos.
+### Sin dominio, la mejor opción es el propio SMTP de Gmail
+
+**Recomendación vigente para el tamaño actual del sello** (unas 20 personas
+suscritas): enviar por el **SMTP de Gmail** con una App Password de
+`nemorphictechno@gmail.com`.
+
+Es contraintuitivo pero es lo que mejor llega: el correo lo envía Google de verdad,
+así que pasa DKIM y SPF **correctamente**. Un proveedor externo mandando "en nombre
+de" ese Gmail no puede alinear DKIM, y ahí es donde empiezan los problemas de spam.
+
+- Gratis, y el límite ronda los 500 correos al día — de sobra para esta lista.
+- Requiere activar la verificación en dos pasos en la cuenta para poder generar la
+  App Password (`EMAIL_APP_PASSWORD`).
+- Lo que **no** da: gestión de rebotes ni estadísticas de apertura. Con 20 personas
+  no importa.
+- Desde una función de Vercel el runtime es Node, así que se puede abrir SMTP
+  (puerto 465/587). Conviene confirmarlo en el primer envío real.
+
+**Brevo** queda como alternativa si se quiere un panel de campañas sin dominio:
+permite validar una única dirección remitente. Peor alineación DKIM que la vía
+anterior; confirma sus límites vigentes antes de prometerlos.
+
+**Al comprar el dominio**, migrar a **Resend** es cambiar solo el adaptador. Y una
+aclaración útil: para *enviar* desde `hola@nemorphic.co` basta verificar el dominio
+con registros DNS — no hace falta buzón, ni Google Workspace, ni crear otro Gmail.
+Si además se quiere *recibir* ahí, lo normal es un reenvío gratuito a la cuenta de
+siempre y configurar "Enviar como" en Gmail. Las cuentas de SoundCloud e Instagram
+no se ven afectadas: siguen atadas al Gmail existente.
 
 **Formspree no sirve aquí.** Es un backend de formularios: te reenvía a ti lo que
 alguien escribe. No gestiona una lista de suscriptores ni envía un boletín a
@@ -53,11 +77,12 @@ src/actions/newsletter.ts    server function que dispara el envío (skill server
 
 Variables de entorno (solo servidor, nunca `VITE_`):
 
-| Variable        | Para qué                                                     |
-| --------------- | ------------------------------------------------------------ |
-| `EMAIL_API_KEY` | clave del proveedor                                          |
-| `EMAIL_FROM`    | remitente verificado, p. ej. `Nemorphic <hola@nemorphic.co>` |
-| `SITE_URL`      | `https://nemorphic.vercel.app` — para los enlaces del correo |
+| Variable             | Para qué                                                          |
+| -------------------- | ----------------------------------------------------------------- |
+| `EMAIL_FROM`         | remitente, hoy `Nemorphic <nemorphictechno@gmail.com>`            |
+| `EMAIL_APP_PASSWORD` | App Password de Gmail (16 caracteres, sin espacios)               |
+| `EMAIL_API_KEY`      | solo si se migra a Resend o Brevo, en vez de la App Password      |
+| `SITE_URL`           | `https://nemorphic.vercel.app` — para los enlaces del correo      |
 
 ## Adaptador
 
@@ -159,6 +184,11 @@ Reglas de la plantilla:
 El panel de admin manda **asunto** y **cuerpo** libres (el envío es manual, y sirve
 para sesiones, tracks, eventos o anuncios). La plantilla es el marco: cabecera con
 logo, el cuerpo que escribió el admin, y pie con redes y enlace de baja.
+
+**Personalización**: `subscribers.name` ya se guarda (migración 0002), así que cada
+correo debe encabezarse con el nombre de quien lo recibe. El cuerpo es el mismo para
+todos; lo que cambia es el saludo. La columna es nullable: para quien no tenga
+nombre, usa un saludo neutro en vez de dejar un hueco o escribir "null".
 
 Si el cuerpo se escribe en texto plano, conviértelo a párrafos y **escapa el HTML**
 antes de insertarlo — si no, cualquier `<` en el texto rompe el correo, y un pegado
