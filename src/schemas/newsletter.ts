@@ -19,9 +19,13 @@ export const subscribeSchema = z.object({
   email: correoSuscriptor,
   /**
    * Campo trampa: está oculto por CSS, así que una persona nunca lo rellena.
-   * Si llega con contenido, es un bot y la petición se descarta en silencio.
+   * Si llega con contenido, es un bot y el servidor lo descarta en silencio.
+   *
+   * Acepta cualquier texto a propósito. Con `max(0)` la validación rechazaba la
+   * petición antes de llegar al handler y devolvía un error, que es exactamente
+   * la señal que no queremos darle a un bot: debe creer que funcionó.
    */
-  website: z.string().max(0).optional(),
+  website: z.string().max(500).optional(),
 });
 
 export type SubscribeInput = z.infer<typeof subscribeSchema>;
