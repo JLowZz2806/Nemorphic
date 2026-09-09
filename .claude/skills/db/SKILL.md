@@ -37,7 +37,7 @@ de bun; con npm no aplica — aun así, avisa al usuario antes de añadir depend
 
 | Variable                    | Dónde                                             | Para qué                                |
 | --------------------------- | ------------------------------------------------- | --------------------------------------- |
-| `SUPABASE_URL`              | `.env` local + Vercel (los tres entornos) | URL del proyecto                        |
+| `SUPABASE_URL`              | `.env` local + Vercel (los tres entornos) | Base del proyecto, **sin** `/rest/v1/`  |
 | `SUPABASE_SERVICE_ROLE_KEY` | igual                                             | clave de servidor, **nunca** al cliente |
 
 `.env` está en `.gitignore` y bloqueado en
