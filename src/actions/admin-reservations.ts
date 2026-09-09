@@ -18,6 +18,13 @@ export type ReservaAdmin = {
   status: "confirmed" | "cancelled" | "checked_in";
   createdAt: string;
   guests: Array<string>;
+  paid: boolean;
+  /** Desde dónde se marcó el pago, para poder cuadrar caja. */
+  paidBy: "admin" | "door" | null;
+  /** Desde dónde se marcó el ingreso. */
+  checkedInBy: "admin" | "door" | null;
+  /** Lo que debe esta reserva, en pesos. Null si el evento no tiene precio. */
+  totalAPagar: number | null;
 };
 
 export type EventoAdmin = {
@@ -26,6 +33,12 @@ export type EventoAdmin = {
   startsAt: string;
   capacity: number | null;
   reservationsOpen: boolean;
+  presalePrice: number | null;
+  doorPrice: number | null;
+  /** Suma de lo cobrado, en pesos: reservas pagadas y no canceladas. */
+  totalCobrado: number;
+  /** Suma de lo que falta cobrar. */
+  totalPendiente: number;
   reservas: Array<ReservaAdmin>;
   /** Entradas comprometidas: solo cuentan las que no están canceladas. */
   entradasComprometidas: number;
@@ -42,7 +55,7 @@ export const listReservations = createServerFn({ method: "GET" }).handler(
 
     const { data: eventos, error: eventosError } = await supabase
       .from("events")
-      .select("id, slug, name, starts_at, capacity, reservations_open")
+      .select("id, slug, name, starts_at, capacity, reservations_open, presale_price, door_price")
       .order("starts_at", { ascending: false });
 
     if (eventosError) {
@@ -52,8 +65,10 @@ export const listReservations = createServerFn({ method: "GET" }).handler(
 
     const { data: reservas, error: reservasError } = await supabase
       .from("reservations")
+      // Cadena literal en una sola pieza: Supabase infiere los tipos analizando
+      // este texto, y una concatenacion en tiempo de ejecucion le hace perder el tipo.
       .select(
-        "id, event_id, code, holder_name, holder_email, holder_phone, tickets, status, created_at",
+        "id, event_id, code, holder_name, holder_email, holder_phone, tickets, status, created_at, paid, paid_by, checked_in_by",
       )
       .order("created_at", { ascending: false });
 
@@ -92,7 +107,14 @@ export const listReservations = createServerFn({ method: "GET" }).handler(
           status: r.status as ReservaAdmin["status"],
           createdAt: r.created_at,
           guests: porReserva.get(r.id) ?? [],
+          paid: r.paid,
+          paidBy: r.paid_by as ReservaAdmin["paidBy"],
+          checkedInBy: r.checked_in_by as ReservaAdmin["checkedInBy"],
+          totalAPagar:
+            typeof evento.presale_price === "number" ? evento.presale_price * r.tickets : null,
         }));
+
+      const vivas = propias.filter((r) => r.status !== "cancelled");
 
       return {
         slug: evento.slug,
@@ -100,10 +122,16 @@ export const listReservations = createServerFn({ method: "GET" }).handler(
         startsAt: evento.starts_at,
         capacity: evento.capacity,
         reservationsOpen: evento.reservations_open,
+        presalePrice: evento.presale_price,
+        doorPrice: evento.door_price,
         reservas: propias,
-        entradasComprometidas: propias
-          .filter((r) => r.status !== "cancelled")
-          .reduce((suma, r) => suma + r.tickets, 0),
+        entradasComprometidas: vivas.reduce((suma, r) => suma + r.tickets, 0),
+        totalCobrado: vivas
+          .filter((r) => r.paid)
+          .reduce((suma, r) => suma + (r.totalAPagar ?? 0), 0),
+        totalPendiente: vivas
+          .filter((r) => !r.paid)
+          .reduce((suma, r) => suma + (r.totalAPagar ?? 0), 0),
       };
     });
   },
@@ -158,7 +186,7 @@ export const createReservationAsAdmin = createServerFn({ method: "POST" })
       return { ok: false as const, message: "Ese evento no existe." };
     }
 
-    for (let intento = 0; intento < 5; intento++) {
+    for (let intento = 0; intento < 10; intento++) {
       const code = generarCodigoReserva();
 
       const { data: reserva, error } = await supabase

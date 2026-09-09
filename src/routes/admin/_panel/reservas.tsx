@@ -14,6 +14,8 @@ import {
   type EventoAdmin,
   type ReservaAdmin,
 } from "@/actions/admin-reservations";
+import { setEventPrices } from "@/actions/admin-settings";
+import { setPaid } from "@/actions/door";
 import {
   MAX_TICKETS,
   adminReservationSchema,
@@ -22,6 +24,12 @@ import {
 
 export const Route = createFileRoute("/admin/_panel/reservas")({
   component: Reservas,
+});
+
+const pesos = new Intl.NumberFormat("es-CO", {
+  style: "currency",
+  currency: "COP",
+  maximumFractionDigits: 0,
 });
 
 const ETIQUETAS: Record<ReservaAdmin["status"], string> = {
@@ -185,6 +193,7 @@ function Reservas() {
   const [eventoAbierto, setEventoAbierto] = useState<string | null>(null);
   const [anadiendo, setAnadiendo] = useState(false);
   const [editando, setEditando] = useState<string | null>(null);
+  const [editandoPrecios, setEditandoPrecios] = useState(false);
 
   const consulta = useQuery({
     queryKey: ["admin", "reservas"],
@@ -235,6 +244,33 @@ function Reservas() {
       toast.success("Cambios guardados");
     },
     onError: () => toast.error("No se pudo guardar. Intenta de nuevo."),
+  });
+
+  const pago = useMutation({
+    mutationFn: (v: { id: string; paid: boolean }) => setPaid({ data: v }),
+    onSuccess: async (resultado) => {
+      if (!resultado.ok) {
+        toast.error(resultado.message);
+        return;
+      }
+      await refrescar();
+    },
+    onError: () => toast.error("No se pudo actualizar el pago."),
+  });
+
+  const precios = useMutation({
+    mutationFn: (v: { slug: string; presalePrice: number; doorPrice: number }) =>
+      setEventPrices({ data: v }),
+    onSuccess: async (resultado) => {
+      if (!resultado.ok) {
+        toast.error(resultado.message);
+        return;
+      }
+      await refrescar();
+      setEditandoPrecios(false);
+      toast.success("Precios guardados");
+    },
+    onError: () => toast.error("No se pudieron guardar los precios."),
   });
 
   const borrado = useMutation({
@@ -349,7 +385,96 @@ function Reservas() {
                   <dt>Ya entraron</dt>
                   <dd>{evento.reservas.filter((r) => r.status === "checked_in").length}</dd>
                 </div>
+                <div className="nm-admin-dato">
+                  <dt>Cobrado</dt>
+                  <dd className="nm-admin-dato-dinero">{pesos.format(evento.totalCobrado)}</dd>
+                </div>
+                <div className="nm-admin-dato">
+                  <dt>Por cobrar</dt>
+                  <dd className="nm-admin-dato-dinero">{pesos.format(evento.totalPendiente)}</dd>
+                </div>
               </dl>
+
+              <section className="nm-admin-card">
+                {editandoPrecios ? (
+                  <form
+                    className="nm-admin-precios-form"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const datos = new FormData(e.currentTarget);
+                      precios.mutate({
+                        slug: evento.slug,
+                        presalePrice: Number(datos.get("presale") ?? 0),
+                        doorPrice: Number(datos.get("door") ?? 0),
+                      });
+                    }}
+                  >
+                    <div className="nm-campo">
+                      <label htmlFor="nm-precio-preventa">Precio reservando (COP)</label>
+                      <input
+                        id="nm-precio-preventa"
+                        name="presale"
+                        type="number"
+                        min={0}
+                        step={1000}
+                        className="nm-input"
+                        defaultValue={evento.presalePrice ?? 0}
+                      />
+                    </div>
+                    <div className="nm-campo">
+                      <label htmlFor="nm-precio-puerta">Precio en puerta sin reserva (COP)</label>
+                      <input
+                        id="nm-precio-puerta"
+                        name="door"
+                        type="number"
+                        min={0}
+                        step={1000}
+                        className="nm-input"
+                        defaultValue={evento.doorPrice ?? 0}
+                      />
+                    </div>
+                    <div className="nm-admin-form-acciones">
+                      <button
+                        type="submit"
+                        className="nm-btn nm-btn--solid"
+                        disabled={precios.isPending}
+                      >
+                        {precios.isPending ? "Guardando..." : "Guardar precios"}
+                      </button>
+                      <button
+                        type="button"
+                        className="nm-admin-logout"
+                        onClick={() => setEditandoPrecios(false)}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <p className="nm-admin-card-texto">
+                    {evento.presalePrice === null ? (
+                      <strong>Sin precio definido.</strong>
+                    ) : (
+                      <>
+                        Reservando: <strong>{pesos.format(evento.presalePrice)}</strong> por persona
+                        {evento.doorPrice !== null && (
+                          <>
+                            {" - "}En puerta sin reserva:{" "}
+                            <strong>{pesos.format(evento.doorPrice)}</strong>
+                          </>
+                        )}
+                      </>
+                    )}{" "}
+                    <button
+                      type="button"
+                      className="nm-admin-enlace"
+                      onClick={() => setEditandoPrecios(true)}
+                    >
+                      Cambiar precios
+                    </button>
+                  </p>
+                )}
+              </section>
 
               {evento.reservas.length === 0 ? (
                 <p className="nm-admin-vacio">Nadie ha reservado todavía para {evento.name}.</p>
@@ -380,6 +505,15 @@ function Reservas() {
                             <span className="nm-reserva-item-codigo">{reserva.code}</span>
                             <span className={`nm-etiqueta nm-etiqueta--${reserva.status}`}>
                               {ETIQUETAS[reserva.status]}
+                            </span>
+                            <span
+                              className={`nm-etiqueta nm-etiqueta--${reserva.paid ? "active" : "debe"}`}
+                            >
+                              {reserva.paid
+                                ? `Pagado${reserva.paidBy === "door" ? " en puerta" : ""}`
+                                : reserva.totalAPagar !== null
+                                  ? `Debe ${pesos.format(reserva.totalAPagar)}`
+                                  : "Sin pagar"}
                             </span>
                             <span className="nm-reserva-entradas">
                               {reserva.tickets} entrada{reserva.tickets === 1 ? "" : "s"} ·{" "}
@@ -418,6 +552,14 @@ function Reservas() {
                                 Marcar que ya entró
                               </button>
                             )}
+                            <button
+                              type="button"
+                              className="nm-admin-logout"
+                              disabled={pago.isPending}
+                              onClick={() => pago.mutate({ id: reserva.id, paid: !reserva.paid })}
+                            >
+                              {reserva.paid ? "Marcar como no pagado" : "Marcar como pagado"}
+                            </button>
                             <button
                               type="button"
                               className="nm-admin-logout"

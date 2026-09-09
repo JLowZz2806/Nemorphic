@@ -41,6 +41,15 @@ const MIGRACIONES = [
     descripcion: "nombre de la persona suscrita, para personalizar el boletín",
     comprobaciones: [{ tabla: "subscribers", columnas: "name" }],
   },
+  {
+    archivo: "0003_pagos_y_puerta.sql",
+    descripcion: "precios por evento, estado de pago y clave de acceso de puerta",
+    comprobaciones: [
+      { tabla: "events", columnas: "presale_price, door_price" },
+      { tabla: "reservations", columnas: "paid, paid_at, paid_by, checked_in_at, checked_in_by" },
+      { tabla: "app_settings", columnas: "key, value" },
+    ],
+  },
 ];
 
 let pendientes = 0;

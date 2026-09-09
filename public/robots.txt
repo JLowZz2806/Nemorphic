@@ -1,10 +1,12 @@
 User-agent: Googlebot
 Allow: /
 Disallow: /admin
+Disallow: /puerta
 
 User-agent: Bingbot
 Allow: /
 Disallow: /admin
+Disallow: /puerta
 
 User-agent: Twitterbot
 Allow: /
@@ -15,3 +17,4 @@ Allow: /
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /puerta

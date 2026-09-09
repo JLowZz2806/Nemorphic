@@ -12,9 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as PuertaListaRouteImport } from './routes/puerta/_lista'
+import { Route as PuertaLoginRouteImport } from './routes/puerta/login'
 import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
 import { Route as AdminPanelReservasRouteImport } from './routes/admin/_panel/reservas'
 import { Route as AdminPanelSuscriptoresRouteImport } from './routes/admin/_panel/suscriptores'
+import { Route as PuertaListaIndexRouteImport } from './routes/puerta/_lista/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,6 +32,16 @@ const AdminPanelRoute = AdminPanelRouteImport.update({
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PuertaListaRoute = PuertaListaRouteImport.update({
+  id: '/puerta/_lista',
+  path: '/puerta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PuertaLoginRoute = PuertaLoginRouteImport.update({
+  id: '/puerta/login',
+  path: '/puerta/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPanelIndexRoute = AdminPanelIndexRouteImport.update({
@@ -46,30 +59,43 @@ const AdminPanelSuscriptoresRoute = AdminPanelSuscriptoresRouteImport.update({
   path: '/suscriptores',
   getParentRoute: () => AdminPanelRoute,
 } as any)
+const PuertaListaIndexRoute = PuertaListaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PuertaListaRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminPanelRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/puerta': typeof PuertaListaRouteWithChildren
+  '/puerta/login': typeof PuertaLoginRoute
   '/admin/reservas': typeof AdminPanelReservasRoute
   '/admin/suscriptores': typeof AdminPanelSuscriptoresRoute
   '/admin/': typeof AdminPanelIndexRoute
+  '/puerta/': typeof PuertaListaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
+  '/puerta/login': typeof PuertaLoginRoute
   '/admin/reservas': typeof AdminPanelReservasRoute
   '/admin/suscriptores': typeof AdminPanelSuscriptoresRoute
   '/admin': typeof AdminPanelIndexRoute
+  '/puerta': typeof PuertaListaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin/_panel': typeof AdminPanelRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/puerta/_lista': typeof PuertaListaRouteWithChildren
+  '/puerta/login': typeof PuertaLoginRoute
   '/admin/_panel/reservas': typeof AdminPanelReservasRoute
   '/admin/_panel/suscriptores': typeof AdminPanelSuscriptoresRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
+  '/puerta/_lista/': typeof PuertaListaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -77,26 +103,40 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/admin/login'
+    | '/puerta'
+    | '/puerta/login'
     | '/admin/reservas'
     | '/admin/suscriptores'
     | '/admin/'
+    | '/puerta/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/' | '/admin/login' | '/admin/reservas' | '/admin/suscriptores' | '/admin'
+    | '/'
+    | '/admin/login'
+    | '/puerta/login'
+    | '/admin/reservas'
+    | '/admin/suscriptores'
+    | '/admin'
+    | '/puerta'
   id:
     | '__root__'
     | '/'
     | '/admin/_panel'
     | '/admin/login'
+    | '/puerta/_lista'
+    | '/puerta/login'
     | '/admin/_panel/reservas'
     | '/admin/_panel/suscriptores'
     | '/admin/_panel/'
+    | '/puerta/_lista/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminPanelRoute: typeof AdminPanelRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
+  PuertaListaRoute: typeof PuertaListaRouteWithChildren
+  PuertaLoginRoute: typeof PuertaLoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -122,6 +162,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/puerta/_lista': {
+      id: '/puerta/_lista'
+      path: '/puerta'
+      fullPath: '/puerta'
+      preLoaderRoute: typeof PuertaListaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/puerta/login': {
+      id: '/puerta/login'
+      path: '/puerta/login'
+      fullPath: '/puerta/login'
+      preLoaderRoute: typeof PuertaLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/_panel/': {
       id: '/admin/_panel/'
       path: '/'
@@ -143,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelSuscriptoresRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/puerta/_lista/': {
+      id: '/puerta/_lista/'
+      path: '/'
+      fullPath: '/puerta/'
+      preLoaderRoute: typeof PuertaListaIndexRouteImport
+      parentRoute: typeof PuertaListaRoute
+    }
   }
 }
 
@@ -162,10 +223,24 @@ const AdminPanelRouteWithChildren = AdminPanelRoute._addFileChildren(
   AdminPanelRouteChildren,
 )
 
+interface PuertaListaRouteChildren {
+  PuertaListaIndexRoute: typeof PuertaListaIndexRoute
+}
+
+const PuertaListaRouteChildren: PuertaListaRouteChildren = {
+  PuertaListaIndexRoute: PuertaListaIndexRoute,
+}
+
+const PuertaListaRouteWithChildren = PuertaListaRoute._addFileChildren(
+  PuertaListaRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminPanelRoute: AdminPanelRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
+  PuertaListaRoute: PuertaListaRouteWithChildren,
+  PuertaLoginRoute: PuertaLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

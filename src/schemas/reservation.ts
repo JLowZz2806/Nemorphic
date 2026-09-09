@@ -88,17 +88,28 @@ export const adminReservationUpdateSchema = reservationBase
 export type AdminReservationUpdateInput = z.infer<typeof adminReservationUpdateSchema>;
 
 /**
- * Código que la persona enseña en la puerta. Sin vocales ni caracteres que se
- * confundan al dictarlos (0/O, 1/I), para que sirva leído en voz alta.
+ * Alfabeto del código de reserva: sin vocales (evita palabras involuntarias) y sin
+ * caracteres que se confundan al dictarlos en voz alta (0/O, 1/I/L).
+ */
+const ALFABETO_CODIGO = "23456789BCDFGHJKMNPQRSTVWXYZ";
+
+export const LARGO_CODIGO = 4;
+
+/**
+ * Código que la persona enseña en la puerta. Cuatro caracteres para que se pueda
+ * leer y teclear rápido en la entrada.
+ *
+ * Con 28 caracteres posibles hay 614.656 combinaciones. La columna `code` tiene
+ * restricción de unicidad y quien inserta reintenta si choca, así que un repetido
+ * no rompe nada: solo cuesta otro intento.
  *
  * Vive en los schemas porque lo usan tanto la reserva pública como el alta desde
  * el panel, y así ambas generan códigos con el mismo formato.
  */
 export function generarCodigoReserva(): string {
-  const alfabeto = "23456789BCDFGHJKLMNPQRSTVWXYZ";
   let codigo = "";
-  for (let i = 0; i < 6; i++) {
-    codigo += alfabeto[Math.floor(Math.random() * alfabeto.length)];
+  for (let i = 0; i < LARGO_CODIGO; i++) {
+    codigo += ALFABETO_CODIGO[Math.floor(Math.random() * ALFABETO_CODIGO.length)];
   }
-  return `NM-${codigo}`;
+  return codigo;
 }

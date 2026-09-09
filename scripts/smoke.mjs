@@ -147,6 +147,24 @@ async function main() {
     }
   }
 
+  // El control de entrada tiene su propia clave y su propio login.
+  const puerta = await fetch(`${baseUrl}/puerta`, { redirect: "manual" });
+  const puertaProtegida =
+    puerta.status >= 300 &&
+    puerta.status < 400 &&
+    (puerta.headers.get("location") ?? "").includes("/puerta/login");
+  if (!puertaProtegida) {
+    failures.push(
+      `GET /puerta sin sesión devolvió ${puerta.status} en vez de redirigir a /puerta/login`,
+    );
+  }
+
+  const puertaLogin = await fetch(`${baseUrl}/puerta/login`);
+  const puertaHtml = await puertaLogin.text();
+  if (puertaLogin.status !== 200 || !puertaHtml.includes("Clave del evento")) {
+    failures.push(`GET /puerta/login no muestra el formulario (status ${puertaLogin.status})`);
+  }
+
   const loginPage = await fetch(`${baseUrl}/admin/login`);
   const loginHtml = await loginPage.text();
   if (loginPage.status !== 200 || !loginHtml.includes("Clave de acceso")) {
@@ -173,7 +191,7 @@ async function main() {
   }
 
   console.log(
-    `smoke: OK — ${CHECKS.length + 5} comprobaciones sobre ${baseUrl} ` +
+    `smoke: OK — ${CHECKS.length + 7} comprobaciones sobre ${baseUrl} ` +
       `(home ${html.length} bytes, panel de admin protegido)`,
   );
   process.exit(0);

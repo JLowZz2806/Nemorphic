@@ -1602,3 +1602,90 @@ select.nm-input option {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Textos y controles auxiliares del panel */
+.nm-admin-card-texto {
+  margin-top: 0.75rem;
+  color: rgb(255 255 255 / 70%);
+  line-height: 1.7;
+}
+
+.nm-admin-estado {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-left: 2px solid var(--nm-pink-strong);
+  font-size: 0.9rem;
+  color: rgb(255 255 255 / 75%);
+}
+
+.nm-admin-pista {
+  font-size: 0.78rem;
+  color: rgb(255 255 255 / 50%);
+}
+
+.nm-admin-enlace {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--nm-pink-strong);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.nm-admin-dato-dinero {
+  font-size: 1.35rem;
+}
+
+.nm-admin-precios-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.nm-etiqueta--debe {
+  background-color: rgb(243 165 165 / 18%);
+  color: #f3a5a5;
+}
+
+/* Control de entrada: pensado para usarse de pie, con una mano y poca luz */
+.nm-puerta-item {
+  border-left: 3px solid rgb(255 255 255 / 12%);
+}
+
+.nm-puerta-item.is-dentro {
+  border-left-color: #9fe0b8;
+  opacity: 0.72;
+}
+
+.nm-puerta-item.is-cancelada {
+  border-left-color: #f3a5a5;
+  opacity: 0.6;
+}
+
+.nm-puerta-estados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.nm-puerta-aviso {
+  margin-top: 0.9rem;
+  padding: 0.6rem 0.85rem;
+  border-left: 2px solid #f3a5a5;
+  font-size: 0.88rem;
+  color: #f3a5a5;
+}
+
+@media (max-width: 640px) {
+  /* En la puerta se pulsa a ciegas: objetivos grandes y a todo el ancho. */
+  .nm-puerta-item .nm-reserva-acciones button {
+    flex: 1 1 100%;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .nm-puerta-item .nm-reserva-item-codigo {
+    font-size: 1.6rem;
+  }
+}

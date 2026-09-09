@@ -64,7 +64,7 @@ export const createReservation = createServerFn({ method: "POST" })
     }
 
     // El código es único en la base; si por casualidad se repite, se reintenta.
-    for (let intento = 0; intento < 5; intento++) {
+    for (let intento = 0; intento < 10; intento++) {
       const code = generarCodigoReserva();
 
       const { data: reserva, error } = await supabase
