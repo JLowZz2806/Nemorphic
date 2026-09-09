@@ -11,11 +11,18 @@ así que el runtime es Node y los secretos se leen con `process.env`.
 ## Modelo de acceso: todo pasa por el servidor
 
 El navegador **nunca** habla con Supabase. Toda lectura y escritura ocurre dentro
-de una server function (skill `server-fn`) usando la `service_role key`.
+de una server function (skill `server-fn`) usando la **clave secreta** del proyecto.
 
 Consecuencia: **RLS activado y sin ninguna policy** en todas las tablas. Así, si
-alguna clave pública se filtrara, no daría acceso a nada. La `service_role key`
-salta RLS por diseño y solo vive en el servidor.
+alguna clave pública se filtrara, no daría acceso a nada. La clave secreta salta
+RLS por diseño y solo vive en el servidor.
+
+**Sobre el nombre de la clave:** Supabase renovó su sistema de claves. Los
+proyectos nuevos —como este— tienen `sb_publishable_…` (para el navegador) y
+`sb_secret_…` (para el servidor). Los antiguos tenían `anon` y `service_role`,
+ambas con formato JWT (`eyJ…`). Aquí se usa la **secret**, que es la equivalente
+moderna de `service_role`. Nunca la publishable: en esta arquitectura el
+navegador no habla con Supabase.
 
 No crees variables `VITE_SUPABASE_*`: cualquier cosa con prefijo `VITE_` termina
 en el bundle del navegador.
@@ -38,7 +45,7 @@ de bun; con npm no aplica — aun así, avisa al usuario antes de añadir depend
 | Variable                    | Dónde                                             | Para qué                                |
 | --------------------------- | ------------------------------------------------- | --------------------------------------- |
 | `SUPABASE_URL`              | `.env` local + Vercel (los tres entornos) | Base del proyecto, **sin** `/rest/v1/`  |
-| `SUPABASE_SERVICE_ROLE_KEY` | igual                                             | clave de servidor, **nunca** al cliente |
+| `SUPABASE_SECRET_KEY`       | igual                                             | `sb_secret_…`, **nunca** al cliente     |
 
 `.env` está en `.gitignore` y bloqueado en
 `.claude/settings.json`. Si necesitas saber si una variable está puesta, pregúntale
@@ -56,9 +63,9 @@ export function getSupabaseAdmin(): SupabaseClient {
   if (client) return client;
 
   const url = process.env["SUPABASE_URL"];
-  const key = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+  const key = process.env["SUPABASE_SECRET_KEY"];
   if (!url || !key) {
-    throw new Error("Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY");
+    throw new Error("Faltan SUPABASE_URL o SUPABASE_SECRET_KEY");
   }
 
   client = createClient(url, key, { auth: { persistSession: false } });
@@ -134,7 +141,7 @@ alter table public.events             enable row level security;
 alter table public.reservations       enable row level security;
 alter table public.reservation_guests enable row level security;
 -- Sin policies a propósito: RLS activo y sin policy = acceso denegado para los
--- roles anon y authenticated. La service_role key del servidor salta RLS.
+-- roles anon y authenticated. La clave secreta del servidor salta RLS.
 ```
 
 ### Cédula: deliberadamente fuera

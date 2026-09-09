@@ -143,7 +143,7 @@ Antes de escribir código, revisa si hay una que cubra la tarea.
 
 | Decisión          | Resuelto                                                                                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Base de datos     | **Supabase** (Postgres). Acceso solo desde el servidor con `service_role`; RLS activo y sin policies                                                    |
+| Base de datos     | **Supabase** (Postgres). Acceso solo desde el servidor con la clave secreta (`sb_secret_…`, en `SUPABASE_SECRET_KEY`); RLS activo y sin policies        |
 | Acceso del equipo | Panel de admin en la propia página + Table Editor de Supabase como respaldo                                                                             |
 | Auth del admin    | Una clave compartida. Hash en variable de entorno + sesión sellada de TanStack Start                                                                    |
 | Notificaciones    | Manuales, desde el panel. Nunca automáticas                                                                                                             |

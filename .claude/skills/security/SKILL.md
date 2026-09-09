@@ -106,7 +106,7 @@ demora, pase lo que pase.
 | `process.env` solo dentro del `.handler()` | El código de nivel superior de un módulo puede acabar evaluado en el cliente        |
 | Nunca un secreto en el repo                | `.env` está en `.gitignore` y bloqueado en `.claude/settings.json`; `.env.example` es la plantilla sin valores |
 | Nunca un secreto en la conversación        | Si hace falta uno, que el usuario lo ponga en Vercel o en su `.env`                 |
-| `service_role key` jamás en el cliente     | Salta RLS: quien la tenga es dueño de la base                                       |
+| La clave secreta jamás en el cliente       | Salta RLS: quien la tenga es dueño de la base                                       |
 
 ### Comprobación real de que no se filtró nada
 
@@ -114,7 +114,7 @@ Después de `npm run build`, el bundle del navegador queda en `.output/public`.
 Búscalo ahí:
 
 ```sh
-grep -rl "SERVICE_ROLE\|eyJhbGciOi\|sk_live\|SESSION_SECRET" .output/public/ || echo "limpio"
+grep -rl "SUPABASE_SECRET\|sb_secret_\|eyJhbGciOi\|SESSION_SECRET" .output/public/ || echo "limpio"
 ```
 
 Si aparece algo, hay una fuga real: mueve el acceso al secreto dentro del handler.
@@ -127,7 +127,8 @@ Haz esta comprobación cada vez que añadas una variable de entorno nueva.
   usas `.rpc()`, tipa los argumentos.
 - No devuelvas errores crudos de Postgres al cliente: filtran nombres de tablas y
   columnas. Loguea el detalle, devuelve un mensaje genérico.
-- Rota la `service_role key` si alguna vez se pega en un chat, un issue o un log.
+- Rota la clave secreta si alguna vez se pega en un chat, un issue o un log. Con el
+  formato nuevo se hace creando otra secret key y borrando la anterior.
 
 ## 4. Formularios públicos
 
