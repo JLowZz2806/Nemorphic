@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
+import { Route as AdminPanelReservasRouteImport } from './routes/admin/_panel/reservas'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,16 +35,23 @@ const AdminPanelIndexRoute = AdminPanelIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminPanelRoute,
 } as any)
+const AdminPanelReservasRoute = AdminPanelReservasRouteImport.update({
+  id: '/reservas',
+  path: '/reservas',
+  getParentRoute: () => AdminPanelRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminPanelRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/admin/reservas': typeof AdminPanelReservasRoute
   '/admin/': typeof AdminPanelIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/reservas': typeof AdminPanelReservasRoute
   '/admin': typeof AdminPanelIndexRoute
 }
 export interface FileRoutesById {
@@ -51,14 +59,21 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin/_panel': typeof AdminPanelRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
+  '/admin/_panel/reservas': typeof AdminPanelReservasRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/login' | '/admin/'
+  fullPaths: '/' | '/admin' | '/admin/login' | '/admin/reservas' | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin/login' | '/admin'
-  id: '__root__' | '/' | '/admin/_panel' | '/admin/login' | '/admin/_panel/'
+  to: '/' | '/admin/login' | '/admin/reservas' | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin/_panel'
+    | '/admin/login'
+    | '/admin/_panel/reservas'
+    | '/admin/_panel/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -97,14 +112,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelIndexRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/admin/_panel/reservas': {
+      id: '/admin/_panel/reservas'
+      path: '/reservas'
+      fullPath: '/admin/reservas'
+      preLoaderRoute: typeof AdminPanelReservasRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
   }
 }
 
 interface AdminPanelRouteChildren {
+  AdminPanelReservasRoute: typeof AdminPanelReservasRoute
   AdminPanelIndexRoute: typeof AdminPanelIndexRoute
 }
 
 const AdminPanelRouteChildren: AdminPanelRouteChildren = {
+  AdminPanelReservasRoute: AdminPanelReservasRoute,
   AdminPanelIndexRoute: AdminPanelIndexRoute,
 }
 

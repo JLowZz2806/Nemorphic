@@ -1293,3 +1293,244 @@ h6,
     margin-right: 0;
   }
 }
+
+/* =====================================================
+   FORMULARIO DE RESERVA (dentro del modal)
+===================================================== */
+
+.nm-event-cta {
+  margin-top: 2rem;
+}
+
+.nm-reserva-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.nm-campo {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.nm-campo label {
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--nm-pink-strong);
+}
+
+.nm-campo p[role="alert"] {
+  font-size: 0.82rem;
+  color: #f3a5a5;
+}
+
+select.nm-input {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--nm-pink-strong) 50%),
+    linear-gradient(135deg, var(--nm-pink-strong) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) calc(50% + 2px),
+    calc(100% - 15px) calc(50% + 2px);
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.5rem;
+}
+
+select.nm-input option {
+  background-color: var(--nm-ink);
+  color: var(--nm-white);
+}
+
+.nm-acompanantes {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 4px;
+}
+
+.nm-acompanantes legend {
+  padding: 0 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--nm-pink);
+}
+
+.nm-reserva-error {
+  padding: 0.75rem 1rem;
+  border-left: 2px solid #f3a5a5;
+  font-size: 0.9rem;
+  color: #f3a5a5;
+}
+
+.nm-reserva-aviso {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 50%);
+}
+
+.nm-reserva-enviar {
+  width: 100%;
+}
+
+.nm-reserva-ok {
+  text-align: center;
+}
+
+.nm-reserva-codigo {
+  margin: 0.75rem 0 1.25rem;
+  font-family: var(--nm-font-display);
+  font-size: 2.5rem;
+  letter-spacing: 0.08em;
+  color: var(--nm-pink);
+}
+
+.nm-reserva-cerrar {
+  margin-top: 1.75rem;
+  min-width: 10rem;
+}
+
+/* =====================================================
+   PANEL: LISTADO DE RESERVAS
+===================================================== */
+
+.nm-admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.nm-admin-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 4px;
+  background-color: var(--nm-ink);
+}
+
+.nm-admin-dato {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.nm-admin-dato dt {
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 50%);
+}
+
+.nm-admin-dato dd {
+  font-family: var(--nm-font-display);
+  font-size: 1.75rem;
+  color: var(--nm-pink);
+}
+
+.nm-reserva-lista {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.nm-reserva-item {
+  padding: 1.25rem;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 4px;
+  background-color: var(--nm-ink);
+}
+
+.nm-reserva-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.75rem 1.25rem;
+}
+
+.nm-reserva-item-codigo {
+  font-family: var(--nm-font-display);
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+  color: var(--nm-pink);
+}
+
+.nm-reserva-nombre {
+  font-size: 1rem;
+  color: var(--nm-white);
+}
+
+.nm-reserva-entradas {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: rgb(255 255 255 / 60%);
+}
+
+.nm-etiqueta {
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.nm-etiqueta--confirmed {
+  background-color: rgb(63 21 128 / 60%);
+  color: var(--nm-pink);
+}
+
+.nm-etiqueta--checked_in {
+  background-color: rgb(93 168 120 / 25%);
+  color: #9fe0b8;
+}
+
+.nm-etiqueta--cancelled {
+  background-color: rgb(255 255 255 / 8%);
+  color: rgb(255 255 255 / 50%);
+}
+
+.nm-reserva-contacto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.88rem;
+  color: rgb(255 255 255 / 65%);
+}
+
+.nm-reserva-invitados {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgb(255 255 255 / 8%);
+  font-size: 0.88rem;
+  color: rgb(255 255 255 / 65%);
+}
+
+.nm-reserva-invitados ol {
+  margin-top: 0.4rem;
+  padding-left: 1.2rem;
+  list-style: decimal;
+}
+
+.nm-reserva-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.nm-admin-vacio {
+  margin-top: 2rem;
+  padding: 2.5rem 1.5rem;
+  border: 1px dashed rgb(255 255 255 / 15%);
+  border-radius: 4px;
+  text-align: center;
+  color: rgb(255 255 255 / 55%);
+}

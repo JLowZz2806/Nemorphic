@@ -22,7 +22,10 @@ export const Route = createFileRoute("/admin/_panel")({
   component: PanelLayout,
 });
 
-const secciones = [{ to: "/admin", label: "Resumen" }] as const;
+const secciones = [
+  { to: "/admin", label: "Resumen" },
+  { to: "/admin/reservas", label: "Reservas" },
+] as const;
 
 function PanelLayout() {
   const router = useRouter();

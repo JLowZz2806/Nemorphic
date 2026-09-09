@@ -33,6 +33,7 @@ const CHECKS = [
   // --nm-font-secondary de styles.css, o el sitio cae al fallback del sistema.
   ["family=DM+Serif+Display", "DM Serif Display cargada"],
   ["family=Manrope", "Manrope cargada"],
+  ["Reservar mi cupo", "botón de reserva de cupo"],
 ];
 
 function parseArgs() {
@@ -131,6 +132,17 @@ async function main() {
     );
   }
 
+  const reservasPanel = await fetch(`${baseUrl}/admin/reservas`, { redirect: "manual" });
+  const reservasProtegido =
+    reservasPanel.status >= 300 &&
+    reservasPanel.status < 400 &&
+    (reservasPanel.headers.get("location") ?? "").includes("/admin/login");
+  if (!reservasProtegido) {
+    failures.push(
+      `GET /admin/reservas sin sesión devolvió ${reservasPanel.status} en vez de redirigir al login`,
+    );
+  }
+
   const loginPage = await fetch(`${baseUrl}/admin/login`);
   const loginHtml = await loginPage.text();
   if (loginPage.status !== 200 || !loginHtml.includes("Clave de acceso")) {
@@ -157,7 +169,7 @@ async function main() {
   }
 
   console.log(
-    `smoke: OK — ${CHECKS.length + 3} comprobaciones sobre ${baseUrl} ` +
+    `smoke: OK — ${CHECKS.length + 4} comprobaciones sobre ${baseUrl} ` +
       `(home ${html.length} bytes, panel de admin protegido)`,
   );
   process.exit(0);

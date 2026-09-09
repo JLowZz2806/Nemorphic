@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { Modal } from "../components/nemorphic/Modal";
+import { ReservationForm } from "../components/nemorphic/ReservationForm";
 import {
   ChevronIcon,
   InstagramIcon,
@@ -42,7 +43,7 @@ const artistasOrdenados = [...artistas].sort((a, b) => a.nombre.localeCompare(b.
 function Index() {
   const [navVisible, setNavVisible] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [modal, setModal] = useState<null | "noticias" | "tienda" | "contacto">(null);
+  const [modal, setModal] = useState<null | "noticias" | "tienda" | "contacto" | "reservar">(null);
   const [fallbacks, setFallbacks] = useState<Record<string, boolean>>({});
   const [releasesBgOffset, setReleasesBgOffset] = useState(0);
 
@@ -383,6 +384,14 @@ function Index() {
                     <dd>Épica — Av. Paralela #55-35</dd>
                   </div>
                 </dl>
+
+                <button
+                  type="button"
+                  className="nm-btn nm-btn--solid nm-event-cta"
+                  onClick={() => setModal("reservar")}
+                >
+                  Reservar mi cupo
+                </button>
               </div>
             </article>
           </div>
@@ -398,6 +407,11 @@ function Index() {
       >
         <img src={LOGO} alt="" aria-hidden="true" width={40} height={40} />
       </button>
+
+      {/* MODAL RESERVA */}
+      <Modal open={modal === "reservar"} onClose={() => setModal(null)} title="Reservar cupo">
+        <ReservationForm onDone={() => setModal(null)} />
+      </Modal>
 
       {/* MODAL CONTACTO */}
       <Modal

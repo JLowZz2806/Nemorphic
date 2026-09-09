@@ -1,0 +1,126 @@
+import { createServerFn } from "@tanstack/react-start";
+
+import { reservationSchema } from "@/schemas/reservation";
+
+export type ReservationResult =
+  { ok: true; code: string; eventName: string } | { ok: false; message: string };
+
+/**
+ * Código que la persona enseña en la puerta. Sin vocales ni caracteres que se
+ * confundan al dictarlos (0/O, 1/I), para que sirva leído en voz alta.
+ */
+function generarCodigo(): string {
+  const alfabeto = "23456789BCDFGHJKLMNPQRSTVWXYZ";
+  let codigo = "";
+  for (let i = 0; i < 6; i++) {
+    codigo += alfabeto[Math.floor(Math.random() * alfabeto.length)];
+  }
+  return `NM-${codigo}`;
+}
+
+export const createReservation = createServerFn({ method: "POST" })
+  .validator(reservationSchema)
+  .handler(async ({ data }): Promise<ReservationResult> => {
+    const { getSupabaseAdmin, isDatabaseConfigured } = await import("@/lib/supabase");
+
+    if (!isDatabaseConfigured()) {
+      console.error("createReservation: faltan las variables de Supabase.");
+      return { ok: false, message: "Las reservas no están disponibles ahora mismo." };
+    }
+
+    const supabase = getSupabaseAdmin();
+
+    const { data: evento, error: eventoError } = await supabase
+      .from("events")
+      .select("id, name, capacity, reservations_open")
+      .eq("slug", data.eventSlug)
+      .maybeSingle();
+
+    if (eventoError) {
+      console.error("createReservation (evento):", eventoError);
+      return { ok: false, message: "No pudimos completar la reserva. Intenta de nuevo." };
+    }
+    if (!evento) {
+      return { ok: false, message: "Ese evento ya no está disponible." };
+    }
+    if (!evento.reservations_open) {
+      return { ok: false, message: "Las reservas para este evento están cerradas." };
+    }
+
+    // Control de aforo. No es a prueba de dos reservas simultáneas por las
+    // últimas entradas; cuando haya aforos ajustados hay que moverlo a una
+    // función de Postgres que bloquee la fila del evento (ver skill `db`).
+    if (typeof evento.capacity === "number") {
+      const { data: reservas, error: aforoError } = await supabase
+        .from("reservations")
+        .select("tickets")
+        .eq("event_id", evento.id)
+        .eq("status", "confirmed");
+
+      if (aforoError) {
+        console.error("createReservation (aforo):", aforoError);
+        return { ok: false, message: "No pudimos completar la reserva. Intenta de nuevo." };
+      }
+
+      const ocupadas = (reservas ?? []).reduce((suma, fila) => suma + (fila.tickets ?? 0), 0);
+      const libres = evento.capacity - ocupadas;
+
+      if (libres <= 0) {
+        return { ok: false, message: "El aforo está completo." };
+      }
+      if (data.tickets > libres) {
+        return {
+          ok: false,
+          message: `Solo quedan ${libres} entrada${libres === 1 ? "" : "s"} disponible${libres === 1 ? "" : "s"}.`,
+        };
+      }
+    }
+
+    // El código es único en la base; si por casualidad se repite, se reintenta.
+    for (let intento = 0; intento < 5; intento++) {
+      const code = generarCodigo();
+
+      const { data: reserva, error } = await supabase
+        .from("reservations")
+        .insert({
+          event_id: evento.id,
+          holder_name: data.holderName,
+          holder_email: data.holderEmail,
+          holder_phone: data.holderPhone,
+          tickets: data.tickets,
+          code,
+        })
+        .select("id")
+        .single();
+
+      if (error) {
+        // 23505 = violación de unicidad, es decir, código repetido.
+        if (error.code === "23505") continue;
+        console.error("createReservation (insert):", error);
+        return { ok: false, message: "No pudimos completar la reserva. Intenta de nuevo." };
+      }
+
+      if (data.guests.length > 0) {
+        const { error: guestsError } = await supabase.from("reservation_guests").insert(
+          data.guests.map((invitado, indice) => ({
+            reservation_id: reserva.id,
+            name: invitado.name,
+            position: indice + 1,
+          })),
+        );
+
+        if (guestsError) {
+          // Una reserva sin sus acompañantes es peor que ninguna: se deshace
+          // para que la persona pueda reintentar sin quedar a medias.
+          console.error("createReservation (acompañantes):", guestsError);
+          await supabase.from("reservations").delete().eq("id", reserva.id);
+          return { ok: false, message: "No pudimos guardar los acompañantes. Intenta de nuevo." };
+        }
+      }
+
+      return { ok: true, code, eventName: evento.name };
+    }
+
+    console.error("createReservation: no se pudo generar un código único en 5 intentos.");
+    return { ok: false, message: "No pudimos completar la reserva. Intenta de nuevo." };
+  });
