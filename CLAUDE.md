@@ -32,7 +32,14 @@ npm run build      # build de producción (Nitro/Cloudflare)
 
 node scripts/optimize-images.mjs            # informe de peso de public/Assets
 node scripts/optimize-images.mjs --apply    # reprocesa y sobrescribe
+
+npm run db:status    # qué migraciones de supabase/migrations/ están aplicadas
+npm run test:panel   # pruebas de funcionalidad y seguridad contra la base real
 ```
+
+`db:status` y `test:panel` leen `.env` con `--env-file`, así que necesitan las
+variables de Supabase. `test:panel` crea filas de prueba con correos
+`@ejemplo.test` y las borra al terminar.
 
 `npm run check` es la verificación mínima de cualquier cambio. No hay test
 runner instalado; `scripts/smoke.mjs` cumple ese rol para el HTML renderizado.
@@ -127,16 +134,31 @@ Antes de escribir código, revisa si hay una que cubra la tarea.
   correo, pendiente de elegir proveedor (ver skill `email`).
 - **Panel de admin**: `/admin` con login por clave compartida, sesión sellada
   (`nm_admin`, HttpOnly + Secure + SameSite=Lax, 8 h) y límite de intentos por IP.
-  Secciones: Resumen, Reservas y Suscriptores; las dos últimas con alta, edición y
-  borrado, para que el equipo no técnico gestione datos sin entrar a Supabase.
-  Sin `SESSION_SECRET` ni `ADMIN_PASSWORD_HASH` el panel no rompe: redirige al login
-  y ahí avisa de que falta configurarlo.
+  Secciones: Resumen (donde se gestiona el acceso de puerta), Reservas y
+  Suscriptores; las dos últimas con alta, edición y borrado, para que el equipo no
+  técnico gestione datos sin entrar a Supabase. Sin `SESSION_SECRET` ni
+  `ADMIN_PASSWORD_HASH` el panel no rompe: redirige al login y ahí avisa de que
+  falta configurarlo.
+- **Control de entrada**: `/puerta`, con **clave propia** que se edita desde
+  `/admin` (guardada como hash en `app_settings`, porque cambia en cada evento y
+  una variable de entorno obligaría a redesplegar). Cookie aparte (`nm_door`, 12 h)
+  para que no pueda confundirse con una sesión de admin. Busca por código, nombre o
+  acompañante y marca ingreso y pago; **no puede editar nombres, entradas ni
+  acompañantes**, que es justo el fraude que se quiere evitar. Se guarda el origen
+  de cada marca (`paid_by`, `checked_in_by`) para poder cuadrar caja.
+- **Pagos**: cada evento tiene `presale_price` (lo que paga quien reservó, aunque
+  pague en la puerta) y `door_price` (informativo, para quien llega sin reserva).
+  Una reserva debe `entradas x presale_price`. Los precios se editan en
+  `/admin/reservas`.
 - **Eventos**: viven en la tabla `events`, pero la sección `#eventos` de la landing
   todavía muestra UMBRA escrito a mano en el JSX. **Falta la sección del panel para
   crear y editar eventos**; hasta entonces se editan desde Supabase.
 - **Server functions**: en `src/actions/`. `src/start.ts` deja activo el middleware
-  CSRF. Cada acción del panel llama a `requireAdmin()` de `src/lib/require-admin.ts`
-  por su cuenta: `beforeLoad` protege la navegación, no la API.
+  CSRF. Cada acción llama por su cuenta a la guarda que le toca, de
+  `src/lib/require-admin.ts`: `requireAdmin()` para lo del panel (rechaza incluso
+  una sesión de puerta válida, porque `isAdmin()` mira otra cookie) y
+  `requireDoorOrAdmin()` para marcar ingreso y pago, que además devuelve el origen.
+  `beforeLoad` protege la navegación, no la API.
 
 ### Migraciones
 
