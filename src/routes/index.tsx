@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 
 import { Modal } from "../components/nemorphic/Modal";
 import { ReservationForm } from "../components/nemorphic/ReservationForm";
+import { NewsletterForm } from "../components/nemorphic/NewsletterForm";
 import {
   ChevronIcon,
   InstagramIcon,
@@ -74,16 +75,6 @@ function Index() {
       window.removeEventListener("resize", handleScroll);
     };
   }, []);
-
-  const handleNewsletter = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const input = form.querySelector<HTMLInputElement>('input[type="email"]');
-    const email = input?.value ?? "";
-    window.alert(`¡Gracias! Te has suscrito con el correo: ${email}`);
-    form.reset();
-    setModal(null);
-  };
 
   return (
     <>
@@ -422,24 +413,7 @@ function Index() {
         <div className="text-center">
           <h3 className="nm-subtitle">Newsletter</h3>
           <p className="nm-body-text mt-2">Suscríbete para recibir novedades y lanzamientos.</p>
-          <form
-            onSubmit={handleNewsletter}
-            className="mt-4 flex flex-wrap items-center justify-center gap-3"
-          >
-            <label htmlFor="nm-email" className="sr-only">
-              Tu correo
-            </label>
-            <input
-              id="nm-email"
-              type="email"
-              className="nm-input"
-              placeholder="Tu correo"
-              required
-            />
-            <button type="submit" className="nm-btn">
-              Suscribir
-            </button>
-          </form>
+          <NewsletterForm />
         </div>
 
         <hr className="my-10 border-0 border-t border-[rgba(210,156,204,0.18)]" />

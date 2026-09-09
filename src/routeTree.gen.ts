@@ -14,6 +14,7 @@ import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
 import { Route as AdminPanelReservasRouteImport } from './routes/admin/_panel/reservas'
+import { Route as AdminPanelSuscriptoresRouteImport } from './routes/admin/_panel/suscriptores'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,18 +41,25 @@ const AdminPanelReservasRoute = AdminPanelReservasRouteImport.update({
   path: '/reservas',
   getParentRoute: () => AdminPanelRoute,
 } as any)
+const AdminPanelSuscriptoresRoute = AdminPanelSuscriptoresRouteImport.update({
+  id: '/suscriptores',
+  path: '/suscriptores',
+  getParentRoute: () => AdminPanelRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminPanelRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/reservas': typeof AdminPanelReservasRoute
+  '/admin/suscriptores': typeof AdminPanelSuscriptoresRoute
   '/admin/': typeof AdminPanelIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/reservas': typeof AdminPanelReservasRoute
+  '/admin/suscriptores': typeof AdminPanelSuscriptoresRoute
   '/admin': typeof AdminPanelIndexRoute
 }
 export interface FileRoutesById {
@@ -60,19 +68,28 @@ export interface FileRoutesById {
   '/admin/_panel': typeof AdminPanelRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/admin/_panel/reservas': typeof AdminPanelReservasRoute
+  '/admin/_panel/suscriptores': typeof AdminPanelSuscriptoresRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/login' | '/admin/reservas' | '/admin/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/admin/login'
+    | '/admin/reservas'
+    | '/admin/suscriptores'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin/login' | '/admin/reservas' | '/admin'
+  to:
+    '/' | '/admin/login' | '/admin/reservas' | '/admin/suscriptores' | '/admin'
   id:
     | '__root__'
     | '/'
     | '/admin/_panel'
     | '/admin/login'
     | '/admin/_panel/reservas'
+    | '/admin/_panel/suscriptores'
     | '/admin/_panel/'
   fileRoutesById: FileRoutesById
 }
@@ -119,16 +136,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelReservasRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/admin/_panel/suscriptores': {
+      id: '/admin/_panel/suscriptores'
+      path: '/suscriptores'
+      fullPath: '/admin/suscriptores'
+      preLoaderRoute: typeof AdminPanelSuscriptoresRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
   }
 }
 
 interface AdminPanelRouteChildren {
   AdminPanelReservasRoute: typeof AdminPanelReservasRoute
+  AdminPanelSuscriptoresRoute: typeof AdminPanelSuscriptoresRoute
   AdminPanelIndexRoute: typeof AdminPanelIndexRoute
 }
 
 const AdminPanelRouteChildren: AdminPanelRouteChildren = {
   AdminPanelReservasRoute: AdminPanelReservasRoute,
+  AdminPanelSuscriptoresRoute: AdminPanelSuscriptoresRoute,
   AdminPanelIndexRoute: AdminPanelIndexRoute,
 }
 

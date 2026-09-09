@@ -116,19 +116,33 @@ Antes de escribir código, revisa si hay una que cubra la tarea.
 | `visual-audit` | Auditar coherencia visual, tipografía, peso de imágenes, accesibilidad                    |
 | `check`        | Ejecutar e interpretar `npm run check`                                                    |
 
-## Estado actual de lo que se va a construir
+## Estado actual
 
-- **Newsletter**: `src/routes/index.tsx` → `handleNewsletter()` (~línea 77) hoy solo
-  hace `window.alert` y limpia el formulario. No hay backend, ni base de datos, ni
-  envío de correo. `sonner` está instalado pero el `<Toaster />` **no está montado**.
-- **Eventos**: la sección `#eventos` tiene un único evento escrito a mano en el JSX
-  (UMBRA, 3 de octubre, Épica). No hay modelo de datos de eventos ni reserva de cupos.
-- **Panel de admin**: `/admin` existe con login por clave compartida, sesión sellada
-  (`nm_admin`, HttpOnly + Secure + SameSite=Lax, 8 h) y límite de intentos. Sin
-  `SESSION_SECRET` ni `ADMIN_PASSWORD_HASH` el panel no rompe: redirige al login y
-  ahí avisa de que falta configurarlo.
-- **Server functions**: aún no se usa ninguna, pero `src/start.ts` ya deja activo el
-  middleware CSRF, así que las `createServerFn` quedan protegidas por defecto.
+- **Reservas**: funcionando de punta a punta. Formulario público en el modal
+  "Reservar cupo" con acompañantes que se abren solos según las entradas, y código
+  de puerta `NM-XXXXXX` (sin caracteres que se confundan al dictarlos). Gestión
+  completa en `/admin/reservas`.
+- **Newsletter**: el formulario guarda **nombre y correo** en Supabase, con campo
+  trampa contra bots. Gestión en `/admin/suscriptores`. Falta solo el envío de
+  correo, pendiente de elegir proveedor (ver skill `email`).
+- **Panel de admin**: `/admin` con login por clave compartida, sesión sellada
+  (`nm_admin`, HttpOnly + Secure + SameSite=Lax, 8 h) y límite de intentos por IP.
+  Secciones: Resumen, Reservas y Suscriptores; las dos últimas con alta, edición y
+  borrado, para que el equipo no técnico gestione datos sin entrar a Supabase.
+  Sin `SESSION_SECRET` ni `ADMIN_PASSWORD_HASH` el panel no rompe: redirige al login
+  y ahí avisa de que falta configurarlo.
+- **Eventos**: viven en la tabla `events`, pero la sección `#eventos` de la landing
+  todavía muestra UMBRA escrito a mano en el JSX. **Falta la sección del panel para
+  crear y editar eventos**; hasta entonces se editan desde Supabase.
+- **Server functions**: en `src/actions/`. `src/start.ts` deja activo el middleware
+  CSRF. Cada acción del panel llama a `requireAdmin()` de `src/lib/require-admin.ts`
+  por su cuenta: `beforeLoad` protege la navegación, no la API.
+
+### Migraciones
+
+Se aplican **a mano** desde el SQL Editor de Supabase: la clave de servicio habla
+por PostgREST, que no permite crear ni alterar tablas. Comprueba el estado con
+`npm run db:status`, que dice qué archivo de `supabase/migrations/` falta por pegar.
 
 ## Próximo trabajo — decisiones ya tomadas
 

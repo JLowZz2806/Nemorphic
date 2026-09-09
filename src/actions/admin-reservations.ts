@@ -1,6 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { requireAdmin } from "@/lib/require-admin";
+import {
+  adminReservationSchema,
+  adminReservationUpdateSchema,
+  generarCodigoReserva,
+} from "@/schemas/reservation";
+
 export type ReservaAdmin = {
   id: string;
   code: string;
@@ -23,17 +30,6 @@ export type EventoAdmin = {
   /** Entradas comprometidas: solo cuentan las que no están canceladas. */
   entradasComprometidas: number;
 };
-
-/**
- * Guarda de sesión para todo lo del panel. `beforeLoad` protege la navegación,
- * pero no la API: cualquiera puede llamar a una server function directamente.
- */
-async function requireAdmin(): Promise<void> {
-  const { isAdmin } = await import("@/lib/auth");
-  if (!(await isAdmin())) {
-    throw new Error("No autorizado");
-  }
-}
 
 export const listReservations = createServerFn({ method: "GET" }).handler(
   async (): Promise<Array<EventoAdmin>> => {
@@ -133,6 +129,158 @@ export const setReservationStatus = createServerFn({ method: "POST" })
     if (error) {
       console.error("setReservationStatus:", error);
       return { ok: false as const, message: "No se pudo actualizar la reserva." };
+    }
+
+    return { ok: true as const };
+  });
+
+/**
+ * Alta manual desde el panel, para cuando alguien pide su cupo por WhatsApp o en
+ * persona. A diferencia del formulario público, no comprueba el aforo: quien lo
+ * usa es del equipo y puede necesitar meter a alguien por encima del límite.
+ */
+export const createReservationAsAdmin = createServerFn({ method: "POST" })
+  .validator(adminReservationSchema)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+
+    const { getSupabaseAdmin } = await import("@/lib/supabase");
+    const supabase = getSupabaseAdmin();
+
+    const { data: evento, error: eventoError } = await supabase
+      .from("events")
+      .select("id")
+      .eq("slug", data.eventSlug)
+      .maybeSingle();
+
+    if (eventoError || !evento) {
+      console.error("createReservationAsAdmin (evento):", eventoError);
+      return { ok: false as const, message: "Ese evento no existe." };
+    }
+
+    for (let intento = 0; intento < 5; intento++) {
+      const code = generarCodigoReserva();
+
+      const { data: reserva, error } = await supabase
+        .from("reservations")
+        .insert({
+          event_id: evento.id,
+          holder_name: data.holderName,
+          holder_email: data.holderEmail,
+          holder_phone: data.holderPhone,
+          tickets: data.tickets,
+          code,
+        })
+        .select("id")
+        .single();
+
+      if (error) {
+        if (error.code === "23505") continue;
+        console.error("createReservationAsAdmin (insert):", error);
+        return { ok: false as const, message: "No se pudo crear la reserva." };
+      }
+
+      if (data.guests.length > 0) {
+        const { error: guestsError } = await supabase.from("reservation_guests").insert(
+          data.guests.map((invitado, indice) => ({
+            reservation_id: reserva.id,
+            name: invitado.name,
+            position: indice + 1,
+          })),
+        );
+
+        if (guestsError) {
+          console.error("createReservationAsAdmin (acompañantes):", guestsError);
+          await supabase.from("reservations").delete().eq("id", reserva.id);
+          return { ok: false as const, message: "No se pudieron guardar los acompañantes." };
+        }
+      }
+
+      return { ok: true as const, code };
+    }
+
+    return { ok: false as const, message: "No se pudo generar un código único." };
+  });
+
+/**
+ * Edición de una reserva existente. Los acompañantes se reemplazan por completo:
+ * es más simple y más seguro que intentar casar cuál cambió.
+ */
+export const updateReservation = createServerFn({ method: "POST" })
+  .validator(adminReservationUpdateSchema)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+
+    const { getSupabaseAdmin } = await import("@/lib/supabase");
+    const supabase = getSupabaseAdmin();
+
+    const { data: evento, error: eventoError } = await supabase
+      .from("events")
+      .select("id")
+      .eq("slug", data.eventSlug)
+      .maybeSingle();
+
+    if (eventoError || !evento) {
+      return { ok: false as const, message: "Ese evento no existe." };
+    }
+
+    const { error } = await supabase
+      .from("reservations")
+      .update({
+        event_id: evento.id,
+        holder_name: data.holderName,
+        holder_email: data.holderEmail,
+        holder_phone: data.holderPhone,
+        tickets: data.tickets,
+      })
+      .eq("id", data.id);
+
+    if (error) {
+      console.error("updateReservation:", error);
+      return { ok: false as const, message: "No se pudo guardar la reserva." };
+    }
+
+    const { error: borradoError } = await supabase
+      .from("reservation_guests")
+      .delete()
+      .eq("reservation_id", data.id);
+
+    if (borradoError) {
+      console.error("updateReservation (borrar acompañantes):", borradoError);
+      return { ok: false as const, message: "No se pudieron actualizar los acompañantes." };
+    }
+
+    if (data.guests.length > 0) {
+      const { error: guestsError } = await supabase.from("reservation_guests").insert(
+        data.guests.map((invitado, indice) => ({
+          reservation_id: data.id,
+          name: invitado.name,
+          position: indice + 1,
+        })),
+      );
+
+      if (guestsError) {
+        console.error("updateReservation (acompañantes):", guestsError);
+        return { ok: false as const, message: "No se pudieron actualizar los acompañantes." };
+      }
+    }
+
+    return { ok: true as const };
+  });
+
+export const deleteReservation = createServerFn({ method: "POST" })
+  .validator(z.object({ id: z.string().uuid() }))
+  .handler(async ({ data }) => {
+    await requireAdmin();
+
+    const { getSupabaseAdmin } = await import("@/lib/supabase");
+
+    // Los acompañantes se borran solos por la clave foránea en cascada.
+    const { error } = await getSupabaseAdmin().from("reservations").delete().eq("id", data.id);
+
+    if (error) {
+      console.error("deleteReservation:", error);
+      return { ok: false as const, message: "No se pudo eliminar la reserva." };
     }
 
     return { ok: true as const };

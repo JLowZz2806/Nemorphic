@@ -132,15 +132,19 @@ async function main() {
     );
   }
 
-  const reservasPanel = await fetch(`${baseUrl}/admin/reservas`, { redirect: "manual" });
-  const reservasProtegido =
-    reservasPanel.status >= 300 &&
-    reservasPanel.status < 400 &&
-    (reservasPanel.headers.get("location") ?? "").includes("/admin/login");
-  if (!reservasProtegido) {
-    failures.push(
-      `GET /admin/reservas sin sesión devolvió ${reservasPanel.status} en vez de redirigir al login`,
-    );
+  // Cada sección del panel se comprueba por separado: una ruta nueva que se
+  // olvide de colgar del layout protegido quedaría abierta sin que nadie lo note.
+  for (const seccion of ["/admin/reservas", "/admin/suscriptores"]) {
+    const respuesta = await fetch(`${baseUrl}${seccion}`, { redirect: "manual" });
+    const protegida =
+      respuesta.status >= 300 &&
+      respuesta.status < 400 &&
+      (respuesta.headers.get("location") ?? "").includes("/admin/login");
+    if (!protegida) {
+      failures.push(
+        `GET ${seccion} sin sesión devolvió ${respuesta.status} en vez de redirigir al login`,
+      );
+    }
   }
 
   const loginPage = await fetch(`${baseUrl}/admin/login`);
@@ -169,7 +173,7 @@ async function main() {
   }
 
   console.log(
-    `smoke: OK — ${CHECKS.length + 4} comprobaciones sobre ${baseUrl} ` +
+    `smoke: OK — ${CHECKS.length + 5} comprobaciones sobre ${baseUrl} ` +
       `(home ${html.length} bytes, panel de admin protegido)`,
   );
   process.exit(0);

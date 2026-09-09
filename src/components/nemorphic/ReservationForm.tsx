@@ -20,6 +20,7 @@ function formatearFecha(iso: string): string {
 
 export function ReservationForm({ onDone }: { onDone: () => void }) {
   const [confirmacion, setConfirmacion] = useState<Confirmacion | null>(null);
+  const [copiado, setCopiado] = useState(false);
 
   const eventos = useQuery({
     queryKey: ["eventos-abiertos"],
@@ -82,12 +83,32 @@ export function ReservationForm({ onDone }: { onDone: () => void }) {
         <p className="nm-eyebrow">Cupo reservado</p>
         <p className="nm-reserva-codigo">{confirmacion.code}</p>
         <p className="nm-body-text">
-          Guarda este código: es el que debes presentar en la entrada de{" "}
+          Guarda este código: es lo que debes presentar en la entrada de{" "}
           <strong>{confirmacion.eventName}</strong>. Te esperamos.
         </p>
-        <button type="button" className="nm-btn nm-btn--solid nm-reserva-cerrar" onClick={onDone}>
-          Listo
-        </button>
+
+        <div className="nm-reserva-ok-acciones">
+          <button
+            type="button"
+            className="nm-btn"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(confirmacion.code);
+                setCopiado(true);
+                window.setTimeout(() => setCopiado(false), 2500);
+              } catch {
+                // Algunos navegadores bloquean el portapapeles; el código está a
+                // la vista, así que basta con no romper nada.
+                setCopiado(false);
+              }
+            }}
+          >
+            {copiado ? "¡Copiado!" : "Copiar código"}
+          </button>
+          <button type="button" className="nm-btn nm-btn--solid" onClick={onDone}>
+            Listo
+          </button>
+        </div>
       </div>
     );
   }

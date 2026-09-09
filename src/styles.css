@@ -1534,3 +1534,71 @@ select.nm-input option {
   text-align: center;
   color: rgb(255 255 255 / 55%);
 }
+
+/* Formularios de alta y edición dentro del panel */
+.nm-admin-form {
+  display: grid;
+  gap: 1.1rem;
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid rgb(210 156 204 / 35%);
+  border-radius: 4px;
+  background-color: var(--nm-ink);
+}
+
+.nm-admin-form-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.nm-admin-toolbar .nm-input {
+  min-width: 16rem;
+  flex: 1 1 16rem;
+}
+
+.nm-etiqueta--active {
+  background-color: rgb(63 21 128 / 60%);
+  color: var(--nm-pink);
+}
+
+.nm-etiqueta--unsubscribed {
+  background-color: rgb(255 255 255 / 8%);
+  color: rgb(255 255 255 / 50%);
+}
+
+/* Formulario del boletín */
+.nm-newsletter-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.nm-newsletter-enviar {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.nm-newsletter-ok {
+  margin-top: 1.5rem;
+}
+
+.nm-reserva-ok-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+/* Campo trampa para bots: invisible pero presente en el DOM. */
+.nm-trampa {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

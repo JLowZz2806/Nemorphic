@@ -25,6 +25,7 @@ export const Route = createFileRoute("/admin/_panel")({
 const secciones = [
   { to: "/admin", label: "Resumen" },
   { to: "/admin/reservas", label: "Reservas" },
+  { to: "/admin/suscriptores", label: "Suscriptores" },
 ] as const;
 
 function PanelLayout() {

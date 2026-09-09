@@ -1,22 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 
-import { reservationSchema } from "@/schemas/reservation";
+import { generarCodigoReserva, reservationSchema } from "@/schemas/reservation";
 
 export type ReservationResult =
   { ok: true; code: string; eventName: string } | { ok: false; message: string };
-
-/**
- * Código que la persona enseña en la puerta. Sin vocales ni caracteres que se
- * confundan al dictarlos (0/O, 1/I), para que sirva leído en voz alta.
- */
-function generarCodigo(): string {
-  const alfabeto = "23456789BCDFGHJKLMNPQRSTVWXYZ";
-  let codigo = "";
-  for (let i = 0; i < 6; i++) {
-    codigo += alfabeto[Math.floor(Math.random() * alfabeto.length)];
-  }
-  return `NM-${codigo}`;
-}
 
 export const createReservation = createServerFn({ method: "POST" })
   .validator(reservationSchema)
@@ -78,7 +65,7 @@ export const createReservation = createServerFn({ method: "POST" })
 
     // El código es único en la base; si por casualidad se repite, se reintenta.
     for (let intento = 0; intento < 5; intento++) {
-      const code = generarCodigo();
+      const code = generarCodigoReserva();
 
       const { data: reserva, error } = await supabase
         .from("reservations")
