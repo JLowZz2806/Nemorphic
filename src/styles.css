@@ -1739,3 +1739,7 @@ select.nm-input option {
   line-height: 1.65;
   color: rgb(255 255 255 / 65%);
 }
+
+.nm-puerta-aviso-admin {
+  margin-bottom: 2rem;
+}

@@ -72,8 +72,15 @@ export const doorLogout = createServerFn({ method: "POST" }).handler(async () =>
 
 export const getDoorStatus = createServerFn({ method: "GET" }).handler(async () => {
   const { isDoor, isAdmin } = await import("@/lib/auth");
-  // El equipo entra a la puerta con su propia sesión de admin, sin clave aparte.
-  return { autorizado: (await isDoor()) || (await isAdmin()) };
+
+  // El equipo entra a la puerta con su propia sesión de admin, sin clave aparte:
+  // es cómodo y no tiene sentido pedirles dos claves. Pero hay que DECIRLO en la
+  // pantalla, porque si no parece que la clave de puerta no sirve para nada
+  // cuando en realidad quien entra es el admin.
+  const conClaveDePuerta = await isDoor();
+  const comoAdmin = conClaveDePuerta ? false : await isAdmin();
+
+  return { autorizado: conClaveDePuerta || comoAdmin, comoAdmin };
 });
 
 /**
