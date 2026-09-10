@@ -33,10 +33,16 @@ export function NewsletterForm() {
 
   if (suscrito) {
     return (
-      <p className="nm-body-text nm-newsletter-ok">
-        Gracias, <strong>{suscrito}</strong>. Te escribiremos cuando haya sesión, lanzamiento o
-        evento nuevo.
-      </p>
+      <div className="nm-newsletter-ok">
+        <p className="nm-body-text">
+          Gracias, <strong>{suscrito}</strong>. Te escribiremos cuando haya sesión, lanzamiento o
+          evento nuevo.
+        </p>
+        <p className="nm-newsletter-aviso">
+          <strong>Un favor:</strong> si usas Gmail, nuestro primer correo suele caer en la pestaña
+          <em> Promociones</em>. Arrástralo a <em>Principal</em> y no se te volverá a escapar.
+        </p>
+      </div>
     );
   }
 

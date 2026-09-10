@@ -90,6 +90,7 @@ export const previsualizarBoletin = createServerFn({ method: "POST" })
         asunto: data.subject,
         cuerpo: data.body,
         unsubscribeUrl: urlDeBaja(TOKEN_DE_EJEMPLO),
+        avisoPromociones: data.avisoPromociones ?? false,
       }),
     };
   });
@@ -135,6 +136,7 @@ export const enviarPrueba = createServerFn({ method: "POST" })
       asunto: data.subject,
       cuerpo: data.body,
       unsubscribeUrl: urlDeBaja(token),
+      avisoPromociones: data.avisoPromociones ?? false,
     };
 
     try {
@@ -187,7 +189,7 @@ export const crearCampana = createServerFn({ method: "POST" })
  * cada destinatario, y además impide personalizar el saludo.
  */
 export const enviarLoteCampana = createServerFn({ method: "POST" })
-  .validator(z.object({ id: z.string().uuid() }))
+  .validator(z.object({ id: z.string().uuid(), avisoPromociones: z.boolean().optional() }))
   .handler(
     async ({ data }): Promise<{ ok: false; message: string } | ({ ok: true } & ProgresoEnvio)> => {
       await requireAdmin();
@@ -246,6 +248,7 @@ export const enviarLoteCampana = createServerFn({ method: "POST" })
               asunto: campana.subject,
               cuerpo: campana.body,
               unsubscribeUrl: urlDeBaja(s.unsubscribe_token),
+              avisoPromociones: data.avisoPromociones ?? false,
             };
             return {
               to: s.email,

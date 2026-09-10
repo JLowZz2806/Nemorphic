@@ -69,13 +69,44 @@ export type BoletinDatos = {
   asunto: string;
   cuerpo: string;
   unsubscribeUrl: string;
+  /**
+   * Añade la nota de "muévenos a Principal". Merece la pena en los primeros
+   * envíos, cuando Gmail todavía no sabe qué hacer con nosotros; después estorba.
+   */
+  avisoPromociones?: boolean;
 };
+
+/**
+ * Nota para pedir que muevan el correo a la bandeja principal.
+ *
+ * Que alguien arrastre el correo a Principal, o responda, es la señal más fuerte
+ * que se le puede dar a Gmail para que deje de clasificarnos como promoción. No
+ * hay forma de forzarlo desde el envío: solo pedirlo.
+ */
+function notaPromociones(): string {
+  return `
+        <tr>
+          <td style="padding:0 34px 26px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="border-left:2px solid ${COLOR.acento};">
+              <tr>
+                <td style="padding:10px 0 10px 14px;font-family:${SANS};font-size:13px;line-height:1.65;color:${COLOR.suave};">
+                  ¿Nos estás leyendo desde la pestaña <strong style="color:${COLOR.acento};font-weight:normal;">Promociones</strong>?
+                  Arrastra este correo a <strong style="color:${COLOR.acento};font-weight:normal;">Principal</strong>
+                  y los próximos te llegarán ahí.
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>`;
+}
 
 export function renderBoletinHtml({
   nombre,
   asunto,
   cuerpo,
   unsubscribeUrl,
+  avisoPromociones = false,
 }: BoletinDatos): string {
   const sitio = getSiteUrl();
 
@@ -129,6 +160,8 @@ export function renderBoletinHtml({
             ${aParrafos(cuerpo)}
           </td>
         </tr>
+
+${avisoPromociones ? notaPromociones() : ""}
 
         <!-- Un solo llamado a la acción, con la tabla haciendo de botón: un <a>
              con padding no se renderiza bien en Outlook. -->
@@ -189,6 +222,7 @@ export function renderBoletinTexto({
   asunto,
   cuerpo,
   unsubscribeUrl,
+  avisoPromociones = false,
 }: BoletinDatos): string {
   const limpio = nombre?.trim();
 
@@ -199,6 +233,13 @@ export function renderBoletinTexto({
     "",
     cuerpo.trim(),
     "",
+    ...(avisoPromociones
+      ? [
+          "¿Nos lees desde la pestaña Promociones? Arrastra este correo a",
+          "Principal y los próximos te llegaran ahi.",
+          "",
+        ]
+      : []),
     "—",
     `Ver la web: ${getSiteUrl()}`,
     "",

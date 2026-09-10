@@ -1709,10 +1709,17 @@ select.nm-input option {
 
 /* Redacción del boletín */
 .nm-textarea {
+  /* `.nm-input` es una píldora (border-radius: 999px), que funciona en una sola
+     línea. En un campo de varias líneas esa curva se come las primeras palabras,
+     así que aquí se cuadra el borde y se reparte el espacio interior. */
+  border-radius: 4px;
+  width: 100%;
   min-height: 12rem;
+  padding: 0.9rem 1.1rem;
   resize: vertical;
   line-height: 1.7;
   font-family: var(--nm-font-body);
+  font-size: 0.95rem;
 }
 
 .nm-boletin-previa {
@@ -1722,4 +1729,13 @@ select.nm-input option {
   border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 4px;
   background-color: #050308;
+}
+
+.nm-newsletter-aviso {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-left: 2px solid var(--nm-pink-strong);
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: rgb(255 255 255 / 65%);
 }

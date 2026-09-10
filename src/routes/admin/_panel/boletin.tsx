@@ -44,7 +44,7 @@ function Boletin() {
 
   const form = useForm<BoletinInput>({
     resolver: zodResolver(boletinSchema),
-    defaultValues: { subject: "", body: "", nombreEjemplo: "" },
+    defaultValues: { subject: "", body: "", nombreEjemplo: "", avisoPromociones: true },
   });
 
   const conexion = useMutation({
@@ -98,7 +98,9 @@ function Boletin() {
 
     try {
       for (;;) {
-        const paso = await enviarLoteCampana({ data: { id: creada.id } });
+        const paso = await enviarLoteCampana({
+          data: { id: creada.id, avisoPromociones: valores.avisoPromociones ?? false },
+        });
 
         if (!paso.ok) {
           toast.error(paso.message);
@@ -200,6 +202,18 @@ function Boletin() {
           {form.formState.errors.body && <p role="alert">{form.formState.errors.body.message}</p>}
           <p className="nm-admin-pista">
             Texto normal. No escribas el saludo: se añade solo con el nombre de cada persona.
+          </p>
+        </div>
+
+        <div className="nm-campo nm-campo--casilla">
+          <label htmlFor="nm-bol-aviso">
+            <input id="nm-bol-aviso" type="checkbox" {...form.register("avisoPromociones")} />
+            Incluir la nota «muévenos a Principal»
+          </label>
+          <p className="nm-admin-pista">
+            Gmail suele archivar los boletines en Promociones. Que alguien lo arrastre a Principal
+            es la señal más fuerte para que deje de hacerlo. Útil en los primeros envíos; quítala
+            cuando ya llegue bien.
           </p>
         </div>
 

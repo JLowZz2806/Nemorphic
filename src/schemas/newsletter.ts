@@ -54,6 +54,13 @@ export const boletinSchema = z.object({
     .max(10000, "El mensaje es demasiado largo"),
   /** Solo para la previsualización y la prueba: no se guarda. */
   nombreEjemplo: z.string().trim().max(60).optional(),
+  /**
+   * Añade dentro del correo la nota de "muévenos a Principal".
+   *
+   * No se guarda en la base: es una decisión de este envío, no del contenido, y
+   * el panel la manda en cada lote.
+   */
+  avisoPromociones: z.boolean().optional(),
 });
 
 export type BoletinInput = z.infer<typeof boletinSchema>;
