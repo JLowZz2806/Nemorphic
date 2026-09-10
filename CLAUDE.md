@@ -11,11 +11,11 @@ Lovable; ver `AGENTS.md` antes de tocar el historial de git.
 | UI            | React 19, TypeScript 5.8 (`strict` + `exactOptionalPropertyTypes` + `noUncheckedIndexedAccess`) |
 | Estilos       | Tailwind CSS v4 (plugin de Vite) + CSS propio en `src/styles.css` (prefijo `nm-`)               |
 | Componentes   | shadcn/ui (new-york, 46 componentes en `src/components/ui/`) + Radix + lucide-react             |
-| Datos/estado  | TanStack Query 5 (provider ya montado en `__root.tsx`)                                          |
-| Formularios   | react-hook-form + zod + `@hookform/resolvers` (ya en deps, aún sin usar)                        |
-| Toasts        | sonner (en deps, aún sin usar — preferirlo sobre `window.alert`)                                |
+| Datos/estado  | TanStack Query 5 (provider montado en `__root.tsx`) + Supabase (Postgres)                       |
+| Formularios   | react-hook-form + zod + `@hookform/resolvers`                                                   |
+| Toasts        | sonner — `<Toaster />` montado en `__root.tsx`. Nunca `window.alert`                            |
 | Build         | Vite 8 vía `@lovable.dev/vite-tanstack-config`                                                  |
-| Deploy        | Nitro preset `cloudflare-module` → Cloudflare Workers (`wrangler`)                              |
+| Deploy        | **Vercel** (Node). Nitro elige el preset por entorno; ver «Despliegue»                          |
 | Runtime local | Node 24 + npm (hay `bun.lock` y `bunfig.toml`, pero **bun no está instalado**: usar npm)        |
 
 ## Comandos
@@ -70,17 +70,23 @@ src/
     index.tsx         TODA la landing (~560 líneas): nav, hero, quiénes somos,
                       artistas, lanzamientos, eventos, modales y newsletter
     admin/            panel privado: login, layout protegido `_panel` y secciones
+    puerta/           control de entrada: login y layout protegido `_lista`
     routeTree.gen.ts  AUTOGENERADO — no editar a mano
   components/
     nemorphic/        Modal.tsx (modal propio, no Radix) y SocialIcons.tsx (SVG inline)
     ui/               shadcn/ui — reutilizar antes de escribir un componente nuevo
   data/nemorphic.ts   artistas[] y lanzamientos[] (contenido hardcodeado + constantes LOGO/HERO_BG)
-  lib/                utils.ts (cn), auth.ts (sesión del panel) y reporte de errores a Lovable
+  lib/                auth.ts (sesiones y claves), supabase.ts (cliente de servidor),
+                      require-admin.ts (guardas), utils.ts y reporte de errores
   actions/            server functions llamables desde el cliente por RPC
   schemas/            schemas zod compartidos entre cliente y servidor
   start.ts            middlewares de servidor: manejo de errores + CSRF para server functions
   server.ts           entry SSR que normaliza errores 500 tragados por h3
 public/Assets/        imágenes reales (rutas con mayúscula y espacios: "/Assets/logo nemorphic.png")
+supabase/migrations/  SQL versionado; se aplica a mano en el SQL Editor de Supabase
+scripts/              verificación (smoke, test:panel, db:status) y utilidades
+tests/                arnés de pruebas del panel — NUNCA bajo src/routes/, contiene borrados
+docs/                 documentación: arquitectura, base de datos y guía de operación
 ```
 
 ## Convenciones
@@ -106,6 +112,16 @@ public/Assets/        imágenes reales (rutas con mayúscula y espacios: "/Asset
 - **Git**: no reescribir historia publicada (rebase/amend/squash/force-push) —
   rompe la sincronía con Lovable.
 
+## Documentación
+
+| Documento               | Para qué                                                                     |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `README.md`             | Puerta de entrada del repo: qué es, cómo arrancarlo, arquitectura            |
+| `docs/arquitectura.md`  | Cómo encaja todo y por qué. Léelo antes de tocar sesiones o server functions |
+| `docs/base-de-datos.md` | Esquema tabla por tabla, migraciones y reglas de consulta                    |
+| `docs/operacion.md`     | Para el equipo del sello: usar el panel y la puerta en un evento             |
+| `roadmap.md`            | Qué falta y en qué orden                                                     |
+
 ## Skills del proyecto
 
 Están en `.claude/skills/`. Invócalas con `/nombre` o deja que se activen solas.
@@ -127,11 +143,12 @@ Antes de escribir código, revisa si hay una que cubra la tarea.
 
 - **Reservas**: funcionando de punta a punta. Formulario público en el modal
   "Reservar cupo" con acompañantes que se abren solos según las entradas, y código
-  de puerta `NM-XXXXXX` (sin caracteres que se confundan al dictarlos). Gestión
+  de puerta de **4 caracteres** (`Q7F3`, sin vocales ni caracteres que se confundan
+  al dictarlos). Gestión
   completa en `/admin/reservas`.
 - **Newsletter**: el formulario guarda **nombre y correo** en Supabase, con campo
-  trampa contra bots. Gestión en `/admin/suscriptores`. Falta solo el envío de
-  correo, pendiente de elegir proveedor (ver skill `email`).
+  trampa contra bots. Gestión en `/admin/suscriptores`. Falta el **envío**; el
+  proveedor ya está decidido (SMTP de Gmail con App Password, ver skill `email`).
 - **Panel de admin**: `/admin` con login por clave compartida, sesión sellada
   (`nm_admin`, HttpOnly + Secure + SameSite=Lax, 8 h) y límite de intentos por IP.
   Secciones: Resumen (donde se gestiona el acceso de puerta), Reservas y
@@ -151,8 +168,11 @@ Antes de escribir código, revisa si hay una que cubra la tarea.
   Una reserva debe `entradas x presale_price`. Los precios se editan en
   `/admin/reservas`.
 - **Eventos**: viven en la tabla `events`, pero la sección `#eventos` de la landing
-  todavía muestra UMBRA escrito a mano en el JSX. **Falta la sección del panel para
-  crear y editar eventos**; hasta entonces se editan desde Supabase.
+  muestra UMBRA **escrito a mano en el JSX**. La sección del panel para crearlos se
+  descartó: el equipo habla siempre antes de anunciar, así que los eventos se crean
+  a mano. **Al crear uno hay que tocar las dos partes** — la fila en la base y el
+  JSX de la landing — o el sitio mostraría el flyer y la fecha de UMBRA con un botón
+  que reserva para otro evento.
 - **Server functions**: en `src/actions/`. `src/start.ts` deja activo el middleware
   CSRF. Cada acción llama por su cuenta a la guarda que le toca, de
   `src/lib/require-admin.ts`: `requireAdmin()` para lo del panel (rechaza incluso
@@ -177,14 +197,14 @@ por PostgREST, que no permite crear ni alterar tablas. Comprueba el estado con
 3. **Panel de admin** en `/admin`, con una única clave compartida con el grupo, para
    que los integrantes no técnicos consulten y editen datos sin entrar a Supabase.
 
-| Decisión          | Resuelto                                                                                                                                                |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Base de datos     | **Supabase** (Postgres). Acceso solo desde el servidor con la clave secreta (`sb_secret_…`, en `SUPABASE_SECRET_KEY`); RLS activo y sin policies        |
-| Acceso del equipo | Panel de admin en la propia página + Table Editor de Supabase como respaldo                                                                             |
-| Auth del admin    | Una clave compartida. Hash en variable de entorno + sesión sellada de TanStack Start                                                                    |
-| Notificaciones    | Manuales, desde el panel. Nunca automáticas                                                                                                             |
-| Cédula            | **Fuera por ahora.** Se documentó cómo añadirla en el futuro si hace falta                                                                              |
-| Correo            | Sin resolver: no hay dominio propio. Ver skill `email` — la recomendación es comprar dominio y usar Resend; el puente es Brevo con remitente verificado |
+| Decisión          | Resuelto                                                                                                                                                                                      |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Base de datos     | **Supabase** (Postgres). Acceso solo desde el servidor con la clave secreta (`sb_secret_…`, en `SUPABASE_SECRET_KEY`); RLS activo y sin policies                                              |
+| Acceso del equipo | Panel de admin en la propia página + Table Editor de Supabase como respaldo                                                                                                                   |
+| Auth del admin    | Una clave compartida. Hash en variable de entorno + sesión sellada de TanStack Start                                                                                                          |
+| Notificaciones    | Manuales, desde el panel. Nunca automáticas                                                                                                                                                   |
+| Cédula            | **Fuera por ahora.** Se documentó cómo añadirla en el futuro si hace falta                                                                                                                    |
+| Correo            | **SMTP de Gmail** con App Password de `nemorphictechno@gmail.com`: sin dominio propio es lo que mejor llega, porque lo firma Google. Migrar a Resend al comprar dominio es cambiar un archivo |
 
 ## Despliegue
 

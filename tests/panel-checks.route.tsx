@@ -394,20 +394,41 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
   await db.from("reservations").delete().like("holder_email", "%@ejemplo.test");
   await db.from("app_settings").delete().eq("key", "door_password_hash");
   await db.from("subscribers").delete().like("email", "%@ejemplo.test");
-  const { count: subsFin } = await db
+  // Lo que hay que comprobar es que no queda NADA de estas pruebas, no que la base
+  // este vacia: en produccion hay suscriptores y reservas reales que deben seguir ahi.
+  const { count: subsPrueba } = await db
+    .from("subscribers")
+    .select("*", { count: "exact", head: true })
+    .like("email", "%@ejemplo.test");
+  const { count: resPrueba } = await db
+    .from("reservations")
+    .select("*", { count: "exact", head: true })
+    .like("holder_email", "%@ejemplo.test");
+  const { count: ajustesPrueba } = await db
+    .from("app_settings")
+    .select("*", { count: "exact", head: true })
+    .eq("key", "door_password_hash");
+
+  ok(
+    "no queda ningun dato de prueba",
+    subsPrueba === 0 && resPrueba === 0,
+    `suscriptores de prueba ${subsPrueba}, reservas de prueba ${resPrueba}`,
+  );
+  ok(
+    "la clave de puerta de prueba fue borrada",
+    ajustesPrueba === 0,
+    `filas en app_settings: ${ajustesPrueba}`,
+  );
+
+  // Informativo: cuantos datos reales quedan, para notar de un vistazo si una
+  // prueba se llevo por delante algo que no era suyo.
+  const { count: subsReales } = await db
     .from("subscribers")
     .select("*", { count: "exact", head: true });
-  const { count: resFin } = await db
+  const { count: resReales } = await db
     .from("reservations")
     .select("*", { count: "exact", head: true });
-  const { count: acompFin } = await db
-    .from("reservation_guests")
-    .select("*", { count: "exact", head: true });
-  ok(
-    "la base queda como estaba",
-    subsFin === 0 && resFin === 0 && acompFin === 0,
-    `suscriptores ${subsFin}, reservas ${resFin}, acompañantes ${acompFin}`,
-  );
+  out.push(`INFO|datos reales intactos|${subsReales} suscriptor(es), ${resReales} reserva(s)`);
 
   return { out };
 });

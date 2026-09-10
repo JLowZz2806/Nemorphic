@@ -122,6 +122,11 @@ try {
     const [estado, nombre, detalle] = linea.split("|");
     const sufijo = detalle ? `  — ${detalle}` : "";
 
+    if (estado === "INFO") {
+      console.log(`  .       ${nombre}${sufijo}`);
+      continue;
+    }
+
     if (estado === "SALTADO") {
       saltadas += 1;
       console.log(`  SALTADO ${nombre}${sufijo}`);
