@@ -1689,3 +1689,20 @@ select.nm-input option {
     font-size: 1.6rem;
   }
 }
+
+/* Página de baja del boletín */
+.nm-baja-texto {
+  margin-top: 1rem;
+  line-height: 1.7;
+}
+
+.nm-baja-nota {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: rgb(255 255 255 / 55%);
+}
+
+.nm-baja-volver {
+  display: inline-block;
+  margin-top: 1.75rem;
+}

@@ -50,6 +50,14 @@ const MIGRACIONES = [
       { tabla: "app_settings", columnas: "key, value" },
     ],
   },
+  {
+    archivo: "0004_boletin.sql",
+    descripcion: "registro de boletines enviados, para reanudar y no duplicar",
+    comprobaciones: [
+      { tabla: "campaigns", columnas: "id, subject, body, status" },
+      { tabla: "campaign_sends", columnas: "id, campaign_id, subscriber_id, sent_at" },
+    ],
+  },
 ];
 
 let pendientes = 0;

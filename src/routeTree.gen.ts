@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BajaRouteImport } from './routes/baja'
 import { Route as AdminPanelRouteImport } from './routes/admin/_panel'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as PuertaListaRouteImport } from './routes/puerta/_lista'
@@ -22,6 +23,11 @@ import { Route as PuertaListaIndexRouteImport } from './routes/puerta/_lista/ind
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BajaRoute = BajaRouteImport.update({
+  id: '/baja',
+  path: '/baja',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPanelRoute = AdminPanelRouteImport.update({
@@ -67,6 +73,7 @@ const PuertaListaIndexRoute = PuertaListaIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/baja': typeof BajaRoute
   '/admin': typeof AdminPanelRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/puerta': typeof PuertaListaRouteWithChildren
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/baja': typeof BajaRoute
   '/admin/login': typeof AdminLoginRoute
   '/puerta/login': typeof PuertaLoginRoute
   '/admin/reservas': typeof AdminPanelReservasRoute
@@ -88,6 +96,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/baja': typeof BajaRoute
   '/admin/_panel': typeof AdminPanelRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/puerta/_lista': typeof PuertaListaRouteWithChildren
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/baja'
     | '/admin'
     | '/admin/login'
     | '/puerta'
@@ -112,6 +122,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/baja'
     | '/admin/login'
     | '/puerta/login'
     | '/admin/reservas'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/baja'
     | '/admin/_panel'
     | '/admin/login'
     | '/puerta/_lista'
@@ -133,6 +145,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BajaRoute: typeof BajaRoute
   AdminPanelRoute: typeof AdminPanelRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   PuertaListaRoute: typeof PuertaListaRouteWithChildren
@@ -146,6 +159,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/baja': {
+      id: '/baja'
+      path: '/baja'
+      fullPath: '/baja'
+      preLoaderRoute: typeof BajaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/_panel': {
@@ -237,6 +257,7 @@ const PuertaListaRouteWithChildren = PuertaListaRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BajaRoute: BajaRoute,
   AdminPanelRoute: AdminPanelRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   PuertaListaRoute: PuertaListaRouteWithChildren,
