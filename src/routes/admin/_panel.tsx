@@ -26,6 +26,7 @@ const secciones = [
   { to: "/admin", label: "Resumen" },
   { to: "/admin/reservas", label: "Reservas" },
   { to: "/admin/suscriptores", label: "Suscriptores" },
+  { to: "/admin/boletin", label: "Boletín" },
 ] as const;
 
 function PanelLayout() {

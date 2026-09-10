@@ -16,6 +16,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as PuertaListaRouteImport } from './routes/puerta/_lista'
 import { Route as PuertaLoginRouteImport } from './routes/puerta/login'
 import { Route as AdminPanelIndexRouteImport } from './routes/admin/_panel/index'
+import { Route as AdminPanelBoletinRouteImport } from './routes/admin/_panel/boletin'
 import { Route as AdminPanelReservasRouteImport } from './routes/admin/_panel/reservas'
 import { Route as AdminPanelSuscriptoresRouteImport } from './routes/admin/_panel/suscriptores'
 import { Route as PuertaListaIndexRouteImport } from './routes/puerta/_lista/index'
@@ -55,6 +56,11 @@ const AdminPanelIndexRoute = AdminPanelIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminPanelRoute,
 } as any)
+const AdminPanelBoletinRoute = AdminPanelBoletinRouteImport.update({
+  id: '/boletin',
+  path: '/boletin',
+  getParentRoute: () => AdminPanelRoute,
+} as any)
 const AdminPanelReservasRoute = AdminPanelReservasRouteImport.update({
   id: '/reservas',
   path: '/reservas',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/puerta': typeof PuertaListaRouteWithChildren
   '/puerta/login': typeof PuertaLoginRoute
+  '/admin/boletin': typeof AdminPanelBoletinRoute
   '/admin/reservas': typeof AdminPanelReservasRoute
   '/admin/suscriptores': typeof AdminPanelSuscriptoresRoute
   '/admin/': typeof AdminPanelIndexRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/baja': typeof BajaRoute
   '/admin/login': typeof AdminLoginRoute
   '/puerta/login': typeof PuertaLoginRoute
+  '/admin/boletin': typeof AdminPanelBoletinRoute
   '/admin/reservas': typeof AdminPanelReservasRoute
   '/admin/suscriptores': typeof AdminPanelSuscriptoresRoute
   '/admin': typeof AdminPanelIndexRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/puerta/_lista': typeof PuertaListaRouteWithChildren
   '/puerta/login': typeof PuertaLoginRoute
+  '/admin/_panel/boletin': typeof AdminPanelBoletinRoute
   '/admin/_panel/reservas': typeof AdminPanelReservasRoute
   '/admin/_panel/suscriptores': typeof AdminPanelSuscriptoresRoute
   '/admin/_panel/': typeof AdminPanelIndexRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/puerta'
     | '/puerta/login'
+    | '/admin/boletin'
     | '/admin/reservas'
     | '/admin/suscriptores'
     | '/admin/'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
     | '/baja'
     | '/admin/login'
     | '/puerta/login'
+    | '/admin/boletin'
     | '/admin/reservas'
     | '/admin/suscriptores'
     | '/admin'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/puerta/_lista'
     | '/puerta/login'
+    | '/admin/_panel/boletin'
     | '/admin/_panel/reservas'
     | '/admin/_panel/suscriptores'
     | '/admin/_panel/'
@@ -203,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPanelIndexRouteImport
       parentRoute: typeof AdminPanelRoute
     }
+    '/admin/_panel/boletin': {
+      id: '/admin/_panel/boletin'
+      path: '/boletin'
+      fullPath: '/admin/boletin'
+      preLoaderRoute: typeof AdminPanelBoletinRouteImport
+      parentRoute: typeof AdminPanelRoute
+    }
     '/admin/_panel/reservas': {
       id: '/admin/_panel/reservas'
       path: '/reservas'
@@ -228,12 +247,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminPanelRouteChildren {
+  AdminPanelBoletinRoute: typeof AdminPanelBoletinRoute
   AdminPanelReservasRoute: typeof AdminPanelReservasRoute
   AdminPanelSuscriptoresRoute: typeof AdminPanelSuscriptoresRoute
   AdminPanelIndexRoute: typeof AdminPanelIndexRoute
 }
 
 const AdminPanelRouteChildren: AdminPanelRouteChildren = {
+  AdminPanelBoletinRoute: AdminPanelBoletinRoute,
   AdminPanelReservasRoute: AdminPanelReservasRoute,
   AdminPanelSuscriptoresRoute: AdminPanelSuscriptoresRoute,
   AdminPanelIndexRoute: AdminPanelIndexRoute,

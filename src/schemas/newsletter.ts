@@ -38,3 +38,22 @@ export const adminSubscriberSchema = z.object({
 });
 
 export type AdminSubscriberInput = z.infer<typeof adminSubscriberSchema>;
+
+/** Lo que se redacta en el panel para enviar como boletín. */
+export const boletinSchema = z.object({
+  subject: z
+    .string()
+    .trim()
+    .min(3, "Escribe un asunto")
+    // Los clientes de correo cortan los asuntos largos; 120 ya es generoso.
+    .max(120, "El asunto es demasiado largo"),
+  body: z
+    .string()
+    .trim()
+    .min(20, "El mensaje es demasiado corto")
+    .max(10000, "El mensaje es demasiado largo"),
+  /** Solo para la previsualización y la prueba: no se guarda. */
+  nombreEjemplo: z.string().trim().max(60).optional(),
+});
+
+export type BoletinInput = z.infer<typeof boletinSchema>;

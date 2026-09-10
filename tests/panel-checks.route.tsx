@@ -13,6 +13,8 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
   const pubRes = await import("@/actions/reservations");
   const puerta = await import("@/actions/door");
   const ajustes = await import("@/actions/admin-settings");
+  const boletin = await import("@/actions/newsletter-admin");
+  const baja = await import("@/actions/unsubscribe");
   const { getSupabaseAdmin } = await import("@/lib/supabase");
   const db = getSupabaseAdmin();
 
@@ -26,6 +28,9 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
   };
 
   const migracion0002 = !(await db.from("subscribers").select("name").limit(1)).error;
+  const migracion0004 =
+    !(await db.from("campaigns").select("id").limit(1)).error &&
+    !(await db.from("campaign_sends").select("id").limit(1)).error;
   const migracion0003 =
     !(await db.from("reservations").select("paid").limit(1)).error &&
     !(await db.from("app_settings").select("key").limit(1)).error;
@@ -315,6 +320,7 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     ok("una clave incorrecta no valida", !(await auth.verifyDoorPassword("otra-cosa")));
 
     await db.from("app_settings").delete().eq("key", "door_password_hash");
+    await db.from("campaigns").delete().eq("subject", "Prueba automatica");
     ok("sin clave configurada, el acceso queda cerrado", !(await auth.doorPasswordIsSet()));
     ok("y nada valida", !(await auth.verifyDoorPassword("clave-de-prueba-puerta")));
   }
@@ -376,6 +382,124 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     }
   }
 
+  grupo("SEGURIDAD: las acciones del boletin exigen sesion de admin");
+  ok("getEstadoCorreo rechaza", (await fallo(() => boletin.getEstadoCorreo())) === "No autorizado");
+  ok("listarCampanas rechaza", (await fallo(() => boletin.listarCampanas())) === "No autorizado");
+  ok(
+    "previsualizarBoletin rechaza",
+    (await fallo(() =>
+      boletin.previsualizarBoletin({
+        data: { subject: "Colarme", body: "x".repeat(30) },
+      }),
+    )) === "No autorizado",
+  );
+  ok(
+    "enviarPrueba rechaza",
+    (await fallo(() =>
+      boletin.enviarPrueba({
+        data: { subject: "Colarme", body: "x".repeat(30), to: "intruso@ejemplo.test" },
+      }),
+    )) === "No autorizado",
+  );
+  ok(
+    "crearCampana rechaza",
+    (await fallo(() =>
+      boletin.crearCampana({ data: { subject: "Colarme", body: "x".repeat(30) } }),
+    )) === "No autorizado",
+  );
+  ok(
+    "enviarLoteCampana rechaza",
+    (await fallo(() =>
+      boletin.enviarLoteCampana({ data: { id: "00000000-0000-0000-0000-000000000000" } }),
+    )) === "No autorizado",
+  );
+  ok(
+    "probarConexionCorreo rechaza",
+    (await fallo(() => boletin.probarConexionCorreo())) === "No autorizado",
+  );
+
+  grupo("FUNCIONALIDAD: baja del boletin");
+  {
+    await db.from("subscribers").delete().eq("email", "baja.auto@ejemplo.test");
+    const { data: nuevo } = await db
+      .from("subscribers")
+      .insert({ name: "Baja Auto", email: "baja.auto@ejemplo.test", status: "active" })
+      .select("unsubscribe_token")
+      .single();
+
+    const conTokenMalo = await baja.unsubscribe({
+      data: { token: "00000000-0000-0000-0000-000000000000" },
+    });
+    ok("un token que no existe se rechaza", !conTokenMalo.ok);
+
+    const r = await baja.unsubscribe({ data: { token: nuevo.unsubscribe_token } });
+    ok("el token correcto da de baja", r.ok === true);
+
+    const { data: tras } = await db
+      .from("subscribers")
+      .select("status, unsubscribed_at")
+      .eq("email", "baja.auto@ejemplo.test")
+      .maybeSingle();
+    ok(
+      "queda unsubscribed, no borrado",
+      tras?.status === "unsubscribed" && Boolean(tras?.unsubscribed_at),
+      String(tras?.status),
+    );
+
+    const { data: activos } = await db
+      .from("subscribers")
+      .select("email")
+      .eq("status", "active")
+      .eq("email", "baja.auto@ejemplo.test");
+    ok("ya no sale en la lista de envio", (activos ?? []).length === 0);
+  }
+
+  grupo("FUNCIONALIDAD: registro de envios");
+  if (!migracion0004) {
+    saltado("todo el grupo", "falta aplicar 0004_boletin.sql en Supabase");
+  } else {
+    const { data: campana } = await db
+      .from("campaigns")
+      .insert({ subject: "Prueba automatica", body: "Cuerpo de prueba", status: "sending" })
+      .select("id")
+      .single();
+
+    const { data: sus } = await db
+      .from("subscribers")
+      .insert({ name: "Envio Auto", email: "envio.auto@ejemplo.test", status: "active" })
+      .select("id")
+      .single();
+
+    if (campana && sus) {
+      const { error: e1 } = await db
+        .from("campaign_sends")
+        .insert({ campaign_id: campana.id, subscriber_id: sus.id });
+      ok("se registra un envio", !e1, e1?.message ?? "");
+
+      const { error: e2 } = await db
+        .from("campaign_sends")
+        .insert({ campaign_id: campana.id, subscriber_id: sus.id });
+      ok(
+        "no se puede registrar dos veces a la misma persona",
+        e2?.code === "23505",
+        e2?.code ?? "LO ACEPTO",
+      );
+
+      const { error: e3 } = await db
+        .from("campaigns")
+        .update({ status: "inventado" })
+        .eq("id", campana.id);
+      ok("la base rechaza un estado de campana invalido", Boolean(e3));
+
+      await db.from("campaigns").delete().eq("id", campana.id);
+      const { count } = await db
+        .from("campaign_sends")
+        .select("*", { count: "exact", head: true })
+        .eq("campaign_id", campana.id);
+      ok("al borrar la campana se borran sus envios", count === 0, `quedan ${count}`);
+    }
+  }
+
   grupo("SEGURIDAD: la clave pública sigue sin ver nada");
   const { createClient } = await import("@supabase/supabase-js");
   const anon = createClient(
@@ -385,6 +509,7 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
   );
   const tablas = ["subscribers", "reservations", "reservation_guests", "events"];
   if (migracion0003) tablas.push("app_settings");
+  if (migracion0004) tablas.push("campaigns", "campaign_sends");
   for (const tabla of tablas) {
     const { data, error } = await anon.from(tabla).select("*").limit(1);
     ok(`${tabla}: sin acceso`, Boolean(error) || (data ?? []).length === 0);
