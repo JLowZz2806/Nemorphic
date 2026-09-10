@@ -81,33 +81,60 @@ export const previsualizarBoletin = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await requireAdmin();
 
-    const { renderBoletinHtml, urlDeBaja } = await import("@/lib/email/templates");
+    const { TOKEN_DE_EJEMPLO, renderBoletinHtml, urlDeBaja } =
+      await import("@/lib/email/templates");
 
     return {
       html: renderBoletinHtml({
         nombre: data.nombreEjemplo?.trim() || "Nombre de la persona",
         asunto: data.subject,
         cuerpo: data.body,
-        unsubscribeUrl: urlDeBaja("00000000-0000-0000-0000-000000000000"),
+        unsubscribeUrl: urlDeBaja(TOKEN_DE_EJEMPLO),
       }),
     };
   });
 
-/** Envía una sola copia a la dirección que indique el equipo, sin tocar la lista. */
+/**
+ * Envía una sola copia a la dirección que indique el equipo, sin tocar la lista.
+ *
+ * Si esa dirección pertenece a alguien suscrito, el correo se arma con SU nombre
+ * y SU token de baja: así la prueba es idéntica a lo que va a recibir la gente, y
+ * el enlace de baja se puede comprobar de verdad. Si no está suscrita, se usa un
+ * token de ejemplo y la página de baja lo explica en vez de dar un error.
+ */
 export const enviarPrueba = createServerFn({ method: "POST" })
   .validator(boletinSchema.extend({ to: z.string().trim().toLowerCase().email("Correo inválido") }))
   .handler(async ({ data }) => {
     await requireAdmin();
 
     const { enviarCorreo } = await import("@/lib/email/provider");
-    const { renderBoletinHtml, renderBoletinTexto, urlDeBaja } =
+    const { getSupabaseAdmin, isDatabaseConfigured } = await import("@/lib/supabase");
+    const { TOKEN_DE_EJEMPLO, renderBoletinHtml, renderBoletinTexto, urlDeBaja } =
       await import("@/lib/email/templates");
 
+    let nombre = data.nombreEjemplo?.trim() || "Nombre de la persona";
+    let token = TOKEN_DE_EJEMPLO;
+    let esSuscriptor = false;
+
+    if (isDatabaseConfigured()) {
+      const { data: suscriptor } = await getSupabaseAdmin()
+        .from("subscribers")
+        .select("name, unsubscribe_token")
+        .eq("email", data.to)
+        .maybeSingle();
+
+      if (suscriptor) {
+        esSuscriptor = true;
+        token = suscriptor.unsubscribe_token;
+        nombre = suscriptor.name ?? nombre;
+      }
+    }
+
     const datos = {
-      nombre: data.nombreEjemplo?.trim() || "Nombre de la persona",
+      nombre,
       asunto: data.subject,
       cuerpo: data.body,
-      unsubscribeUrl: urlDeBaja("00000000-0000-0000-0000-000000000000"),
+      unsubscribeUrl: urlDeBaja(token),
     };
 
     try {
@@ -122,7 +149,7 @@ export const enviarPrueba = createServerFn({ method: "POST" })
       return { ok: false as const, message: "No se pudo enviar la prueba. Revisa la conexión." };
     }
 
-    return { ok: true as const };
+    return { ok: true as const, esSuscriptor };
   });
 
 /**

@@ -72,7 +72,11 @@ function Boletin() {
         toast.error(r.message);
         return;
       }
-      toast.success(`Prueba enviada a ${correoPrueba}. Revisa también la carpeta de spam.`);
+      toast.success(
+        r.esSuscriptor
+          ? `Prueba enviada a ${correoPrueba}. Su enlace de baja es el real: si lo pulsas, te das de baja de verdad.`
+          : `Prueba enviada a ${correoPrueba}.`,
+      );
     },
     onError: () => toast.error("No se pudo enviar la prueba."),
   });
@@ -229,7 +233,13 @@ function Boletin() {
               onChange={(e) => setCorreoPrueba(e.target.value)}
             />
             <p className="nm-admin-pista">
-              Llega solo a esta dirección, con [PRUEBA] en el asunto. No toca la lista.
+              Llega solo a esta dirección, con [PRUEBA] en el asunto. No toca la lista. Si esa
+              dirección está suscrita, el correo va con su nombre y su enlace de baja reales, para
+              que la prueba sea idéntica a lo que recibirá la gente.
+            </p>
+            <p className="nm-admin-pista">
+              <strong>Búscalo también en Promociones y en Spam.</strong> Gmail suele archivar ahí
+              los boletines la primera vez.
             </p>
           </div>
           <button

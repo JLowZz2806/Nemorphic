@@ -207,6 +207,13 @@ export function renderBoletinTexto({
   ].join("\n");
 }
 
+/**
+ * Token que llevan la vista previa y las pruebas a direcciones no suscritas.
+ * La pagina /baja lo reconoce y explica que es un ejemplo, en vez de decir que
+ * el enlace no es valido.
+ */
+export const TOKEN_DE_EJEMPLO = "00000000-0000-0000-0000-000000000000";
+
 export function urlDeBaja(token: string): string {
   return `${getSiteUrl()}/baja?token=${token}`;
 }

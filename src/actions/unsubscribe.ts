@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 export type BajaResult =
-  { ok: true; email: string } | { ok: false; motivo: "token-invalido" | "error" };
+  | { ok: true; email: string }
+  | { ok: false; motivo: "token-invalido" | "token-de-ejemplo" | "error" };
 
 /**
  * Da de baja del boletín con un token, sin necesidad de iniciar sesión.
@@ -22,6 +23,13 @@ export const unsubscribe = createServerFn({ method: "POST" })
     if (!isDatabaseConfigured()) {
       console.error("unsubscribe: faltan las variables de Supabase.");
       return { ok: false, motivo: "error" };
+    }
+
+    // Las vistas previas y las pruebas a direcciones no suscritas llevan este
+    // token. Se distingue para poder explicarlo en vez de dar un error confuso.
+    const { TOKEN_DE_EJEMPLO } = await import("@/lib/email/templates");
+    if (data.token === TOKEN_DE_EJEMPLO) {
+      return { ok: false, motivo: "token-de-ejemplo" };
     }
 
     const supabase = getSupabaseAdmin();

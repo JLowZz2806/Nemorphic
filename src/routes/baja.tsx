@@ -86,6 +86,21 @@ function Contenido({ token, mutation }: { token: string | undefined; mutation: M
     );
   }
 
+  if (resultado?.motivo === "token-de-ejemplo") {
+    return (
+      <>
+        <h1 className="nm-display nm-login-title">Enlace de ejemplo</h1>
+        <p className="nm-body-text nm-baja-texto">
+          Este correo era una <strong>prueba</strong>, así que su enlace de baja no da de baja a
+          nadie. En el boletín real, aquí se daría de baja quien lo recibió.
+        </p>
+        <a href="/" className="nm-btn nm-baja-volver">
+          Volver a la web
+        </a>
+      </>
+    );
+  }
+
   if (resultado?.motivo === "token-invalido") {
     return (
       <>
