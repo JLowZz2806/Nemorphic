@@ -85,8 +85,9 @@ function AccesoPuerta() {
       </p>
 
       <p className="nm-admin-card-texto">
-        Cámbiala antes de cada evento. Al cambiarla, quien tuviera la anterior queda fuera en su
-        siguiente visita.
+        Cámbiala antes de cada evento. Al cambiarla, quien estuviera dentro con la clave anterior
+        queda fuera <strong>al instante</strong>, sin esperar a que caduque su sesión. «Cerrar el
+        acceso» hace lo mismo y además impide entrar hasta que pongas una clave nueva.
       </p>
 
       {info.data && (

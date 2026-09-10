@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { env } from "node:process";
 
 // `useSession` no es un hook de React, es el helper de sesión de TanStack Start.
@@ -24,6 +24,15 @@ type SesionData = {
   /** Compatibilidad con las sesiones emitidas antes de existir los roles. */
   admin?: true;
   at?: number;
+  /**
+   * Huella de la clave de puerta con la que se abrio esta sesion.
+   *
+   * Sin esto, la cookie se valida sola y cambiar la clave no echaba a nadie: las
+   * sesiones abiertas seguian entrando hasta caducar. Comparando la huella en
+   * cada peticion, cambiar la clave —o cerrar el acceso— invalida al instante
+   * todo lo que se abrio con la anterior.
+   */
+  huella?: string;
 };
 
 const COOKIE: Record<Rol, string> = { admin: "nm_admin", door: "nm_door" };
@@ -32,6 +41,9 @@ const COOKIE: Record<Rol, string> = { admin: "nm_admin", door: "nm_door" };
 const DURACION_SEGUNDOS: Record<Rol, number> = { admin: 60 * 60 * 8, door: 60 * 60 * 12 };
 
 const MIN_SECRET_LENGTH = 32;
+
+/** Clave con la que se guarda el hash de la contrasena de puerta. */
+const CLAVE_PUERTA = "door_password_hash";
 
 /**
  * Configuración de sesión, o `null` si el entorno no está preparado.
@@ -73,15 +85,49 @@ function requireSessionConfig(rol: Rol) {
 
 // --- Sesiones ---------------------------------------------------------------
 
+/**
+ * Identifica la clave de puerta vigente sin exponerla.
+ *
+ * Se deriva del hash guardado, asi que cambia en cuanto se cambia la clave, y
+ * es `null` si el acceso esta cerrado. No revela nada: ya es una huella de un
+ * hash con sal.
+ */
+async function huellaClavePuerta(): Promise<string | null> {
+  const { getSupabaseAdmin, isDatabaseConfigured } = await import("@/lib/supabase");
+  if (!isDatabaseConfigured()) return null;
+
+  const { data, error } = await getSupabaseAdmin()
+    .from("app_settings")
+    .select("value")
+    .eq("key", CLAVE_PUERTA)
+    .maybeSingle();
+
+  if (error || !data?.value) return null;
+
+  return createHash("sha256").update(data.value).digest("hex").slice(0, 32);
+}
+
+/** Solo para las pruebas: comprobar que la huella cambia al cambiar la clave. */
+export async function huellaClavePuertaParaPruebas(): Promise<string | null> {
+  return huellaClavePuerta();
+}
+
 async function tieneSesion(rol: Rol): Promise<boolean> {
   const config = getSessionConfig(rol);
   if (!config) return false;
 
   const session = await openSession<SesionData>(config);
+
   if (rol === "admin") {
     return session.data.rol === "admin" || session.data.admin === true;
   }
-  return session.data.rol === "door";
+
+  if (session.data.rol !== "door") return false;
+
+  // La sesion de puerta vale solo mientras siga vigente la clave con la que se
+  // abrio. Si se cambio o se cerro el acceso, deja de servir de inmediato.
+  const vigente = await huellaClavePuerta();
+  return vigente !== null && session.data.huella === vigente;
 }
 
 export async function isAdmin(): Promise<boolean> {
@@ -94,7 +140,11 @@ export async function isDoor(): Promise<boolean> {
 
 export async function startSession(rol: Rol): Promise<void> {
   const session = await openSession<SesionData>(requireSessionConfig(rol));
-  await session.update({ rol, at: Date.now() });
+
+  // La de puerta guarda con que clave se abrio, para poder invalidarla despues.
+  const huella = rol === "door" ? await huellaClavePuerta() : undefined;
+
+  await session.update({ rol, at: Date.now(), ...(huella ? { huella } : {}) });
 }
 
 export async function endSession(rol: Rol): Promise<void> {
@@ -152,8 +202,6 @@ export function verifyAdminPassword(input: string): boolean {
   }
   return verifyPassword(input, stored);
 }
-
-const CLAVE_PUERTA = "door_password_hash";
 
 /**
  * La clave de puerta vive en la base, no en el entorno: cambia en cada evento y

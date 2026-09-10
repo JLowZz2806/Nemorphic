@@ -303,6 +303,22 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
   } else {
     const auth = await import("@/lib/auth");
 
+    // Se guarda la clave real para devolverla al final: si no, correr las
+    // pruebas dejaria al equipo sin acceso de puerta sin que nadie lo note.
+    //
+    // Si lo que hay guardado es la clave de prueba, es basura de una ejecucion
+    // que se corto a medias: no se restaura, se deja limpio.
+    const { data: guardada } = await db
+      .from("app_settings")
+      .select("value")
+      .eq("key", "door_password_hash")
+      .maybeSingle();
+
+    const esBasuraDePruebas =
+      typeof guardada?.value === "string" &&
+      auth.verifyPassword("clave-de-prueba-puerta", guardada.value);
+    const claveOriginal = esBasuraDePruebas ? null : guardada;
+
     await auth.setDoorPassword("clave-de-prueba-puerta");
     ok("la clave se guarda", await auth.doorPasswordIsSet());
 
@@ -319,10 +335,30 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     ok("la clave correcta valida", await auth.verifyDoorPassword("clave-de-prueba-puerta"));
     ok("una clave incorrecta no valida", !(await auth.verifyDoorPassword("otra-cosa")));
 
+    // La huella es lo que invalida las sesiones abiertas: si cambia la clave,
+    // cambia la huella, y las cookies emitidas con la anterior dejan de valer.
+    const huellaA = await auth.huellaClavePuertaParaPruebas();
+    await auth.setDoorPassword("otra-clave-distinta");
+    const huellaB = await auth.huellaClavePuertaParaPruebas();
+    ok(
+      "cambiar la clave cambia la huella de sesion",
+      Boolean(huellaA) && Boolean(huellaB) && huellaA !== huellaB,
+    );
+
     await db.from("app_settings").delete().eq("key", "door_password_hash");
-    await db.from("campaigns").delete().eq("subject", "Prueba automatica");
     ok("sin clave configurada, el acceso queda cerrado", !(await auth.doorPasswordIsSet()));
     ok("y nada valida", !(await auth.verifyDoorPassword("clave-de-prueba-puerta")));
+    ok(
+      "sin clave no hay huella, asi que ninguna sesion vale",
+      (await auth.huellaClavePuertaParaPruebas()) === null,
+    );
+
+    // Se devuelve la clave que hubiera antes de las pruebas.
+    if (claveOriginal?.value) {
+      await db
+        .from("app_settings")
+        .upsert({ key: "door_password_hash", value: claveOriginal.value }, { onConflict: "key" });
+    }
   }
 
   grupo("FUNCIONALIDAD: pagos");
@@ -517,7 +553,7 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
 
   grupo("LIMPIEZA");
   await db.from("reservations").delete().like("holder_email", "%@ejemplo.test");
-  await db.from("app_settings").delete().eq("key", "door_password_hash");
+  await db.from("campaigns").delete().eq("subject", "Prueba automatica");
   await db.from("subscribers").delete().like("email", "%@ejemplo.test");
   // Lo que hay que comprobar es que no queda NADA de estas pruebas, no que la base
   // este vacia: en produccion hay suscriptores y reservas reales que deben seguir ahi.
@@ -529,10 +565,16 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     .from("reservations")
     .select("*", { count: "exact", head: true })
     .like("holder_email", "%@ejemplo.test");
-  const { count: ajustesPrueba } = await db
+  // No se exige que app_settings quede vacia: la clave de puerta real debe seguir
+  // ahi. Lo que importa es que no haya quedado la de prueba.
+  const { data: claveFinal } = await db
     .from("app_settings")
-    .select("*", { count: "exact", head: true })
-    .eq("key", "door_password_hash");
+    .select("value")
+    .eq("key", "door_password_hash")
+    .maybeSingle();
+  const quedoLaDePrueba =
+    typeof claveFinal?.value === "string" &&
+    (await import("@/lib/auth")).verifyPassword("clave-de-prueba-puerta", claveFinal.value);
 
   ok(
     "no queda ningun dato de prueba",
@@ -540,9 +582,9 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     `suscriptores de prueba ${subsPrueba}, reservas de prueba ${resPrueba}`,
   );
   ok(
-    "la clave de puerta de prueba fue borrada",
-    ajustesPrueba === 0,
-    `filas en app_settings: ${ajustesPrueba}`,
+    "no queda la clave de puerta de prueba",
+    !quedoLaDePrueba,
+    claveFinal ? "sigue configurada la clave real" : "no hay clave de puerta configurada",
   );
 
   // Informativo: cuantos datos reales quedan, para notar de un vistazo si una
