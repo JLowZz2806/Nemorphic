@@ -97,6 +97,24 @@ evento.
 
 ---
 
+## Reservas: el correo automático
+
+Quien reserva desde la web recibe **al instante** un correo con el agradecimiento, su
+código de entrada, y el nombre y el eslogan del evento. No hay que hacer nada: sale
+solo al guardarse la reserva.
+
+Dos cosas que conviene tener claras:
+
+- **Una reserva añadida a mano desde el panel no manda correo.** Esa persona te
+  escribió por WhatsApp, así que pásale el código por ahí mismo.
+- **Cambiar el correo de una reserva no reenvía nada**, y el código nunca cambia. Si
+  alguien lo perdió, búscalo en _Reservas_ y díselo.
+
+Si el envío falla, la reserva **se guarda igual**: el código sigue en pantalla y en el
+panel. La persona ve un aviso de que no le llegó el correo.
+
+---
+
 ## Reservas: añadir y corregir a mano
 
 En **`/admin` → Reservas**.
@@ -127,7 +145,7 @@ _Dado de baja_ (deja de recibir correos pero no se borra) o eliminarlo del todo.
 Se guarda el nombre además del correo para que el boletín llegue encabezado con el
 nombre de cada persona, aunque el texto sea el mismo para todos.
 
-> El **envío** del boletín todavía no está construido. Ver [`../roadmap.md`](../roadmap.md).
+El **envío** se hace desde **`/admin` → Boletín**, con asunto y cuerpo libres.
 
 ---
 

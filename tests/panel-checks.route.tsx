@@ -204,6 +204,13 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     }
   }
 
+  // Crear una reserva dispara el correo de confirmacion. Las de prueba van a
+  // @ejemplo.test, un dominio que no existe: enviarlas de verdad solo serviria
+  // para que la cuenta de Gmail acumule rebotes. Se apaga el envio mientras dura
+  // el harness y se devuelve la clave al final.
+  const claveCorreo = process.env["EMAIL_APP_PASSWORD"];
+  delete process.env["EMAIL_APP_PASSWORD"];
+
   grupo("FUNCIONALIDAD: reservas");
   const rRes = await pubRes.createReservation({
     data: {
@@ -217,6 +224,13 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
   });
   const codigoCreado = rRes.ok ? rRes.code : "";
   ok("reserva pública con código válido", /^[A-Z0-9]{4}$/.test(codigoCreado), codigoCreado);
+  // Sin correo configurado la reserva tiene que guardarse igual y decir que no
+  // se envio, para que el formulario no prometa un correo que nunca salio.
+  ok(
+    "sin correo configurado la reserva se guarda y avisa que no se envio",
+    rRes.ok === true && rRes.correoEnviado === false,
+    rRes.ok ? String(rRes.correoEnviado) : "la reserva fallo",
+  );
 
   const { data: reservaCreada } = await db
     .from("reservations")
@@ -494,6 +508,74 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     ok("se escapa el cuerpo", !conHtml.includes("<b>con etiquetas</b>"));
   }
 
+  grupo("FUNCIONALIDAD: correo de confirmacion de reserva");
+  {
+    const plantillas = await import("@/lib/email/templates");
+    const reserva = {
+      nombre: "Ana Prueba",
+      codigo: "Q7F3",
+      evento: "UMBRA",
+      eslogan: "Aqui no se escucha. Se siente.",
+      inicio: "2026-10-03T20:00:00-05:00",
+      lugar: "Epica",
+      entradas: 2,
+    };
+
+    ok(
+      "el asunto lleva el evento y el codigo",
+      plantillas.asuntoReserva(reserva).includes("UMBRA") &&
+        plantillas.asuntoReserva(reserva).includes("Q7F3"),
+      plantillas.asuntoReserva(reserva),
+    );
+
+    const html = plantillas.renderReservaHtml(reserva);
+    ok("el correo agradece por su nombre", html.includes("Gracias, Ana Prueba."));
+    ok("lleva el codigo de entrada", html.includes("Q7F3"));
+    ok("lleva el nombre del evento", html.includes("UMBRA"));
+    ok("lleva el eslogan del evento", html.includes("Aqui no se escucha. Se siente."));
+    ok("dice cuantas entradas son", html.includes("2 entradas"));
+    // La hora se imprime en zona de Colombia: el correo se lee desde cualquier parte.
+    ok("la fecha sale en hora de Colombia", html.includes("octubre") && html.includes("8:00"));
+
+    // Es transaccional: un enlace de baja aqui haria que alguien se diera de baja
+    // del boletin creyendo que cancelaba su cupo.
+    ok(
+      "no lleva enlace de baja",
+      !html.includes("/baja?token=") && !html.toLowerCase().includes("darme de baja"),
+    );
+
+    const texto = plantillas.renderReservaTexto(reserva);
+    ok(
+      "la version en texto lleva lo mismo",
+      texto.includes("Q7F3") && texto.includes("UMBRA") && texto.includes("Gracias, Ana Prueba."),
+    );
+
+    // tagline, starts_at y venue son nullable en la base.
+    const minimo = plantillas.renderReservaHtml({
+      ...reserva,
+      eslogan: null,
+      inicio: null,
+      lugar: null,
+      entradas: 1,
+    });
+    ok(
+      "sin eslogan, fecha ni lugar sigue saliendo el codigo",
+      minimo.includes("Q7F3") && !minimo.includes("Cuándo:") && !minimo.includes("Dónde:"),
+    );
+    ok("con una entrada no dice el numero", !minimo.includes("1 entradas"));
+
+    // El nombre y el evento vienen de un formulario publico y de la base.
+    const conHtml = plantillas.renderReservaHtml({
+      ...reserva,
+      nombre: "<script>alert(1)</script>",
+      eslogan: "<b>eslogan</b>",
+    });
+    ok(
+      "se escapa lo que viene del formulario y de la base",
+      !conHtml.includes("<script>") && !conHtml.includes("<b>eslogan</b>"),
+    );
+  }
+
   grupo("SEGURIDAD: las acciones del boletin exigen sesion de admin");
   ok("getEstadoCorreo rechaza", (await fallo(() => boletin.getEstadoCorreo())) === "No autorizado");
   ok("listarCampanas rechaza", (await fallo(() => boletin.listarCampanas())) === "No autorizado");
@@ -644,6 +726,7 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
   }
 
   grupo("LIMPIEZA");
+  if (claveCorreo !== undefined) process.env["EMAIL_APP_PASSWORD"] = claveCorreo;
   await db.from("reservations").delete().like("holder_email", "%@ejemplo.test");
   await db.from("campaigns").delete().eq("subject", "Prueba automatica");
   await db.from("subscribers").delete().like("email", "%@ejemplo.test");

@@ -3,7 +3,71 @@ import { createServerFn } from "@tanstack/react-start";
 import { generarCodigoReserva, reservationSchema } from "@/schemas/reservation";
 
 export type ReservationResult =
-  { ok: true; code: string; eventName: string } | { ok: false; message: string };
+  | {
+      ok: true;
+      code: string;
+      eventName: string;
+      /**
+       * Si se le pudo mandar el código por correo. Va al formulario para no
+       * prometer un correo que nunca salió: sin esto, quien no lo reciba
+       * pensaría que perdió el cupo.
+       */
+      correoEnviado: boolean;
+    }
+  | { ok: false; message: string };
+
+/**
+ * Manda la confirmación con el código de entrada.
+ *
+ * Nunca tira hacia arriba: la reserva ya está guardada y es lo que importa. Si
+ * el correo falla, la persona sigue viendo el código en pantalla y el equipo lo
+ * tiene en /admin/reservas, así que se registra el fallo y se sigue.
+ */
+async function enviarConfirmacion(datos: {
+  para: string;
+  nombre: string;
+  codigo: string;
+  evento: string;
+  eslogan: string | null;
+  inicio: string | null;
+  lugar: string | null;
+  entradas: number;
+}): Promise<boolean> {
+  try {
+    const { isEmailConfigured, enviarCorreo } = await import("@/lib/email/provider");
+
+    if (!isEmailConfigured()) {
+      console.error(
+        "createReservation: faltan EMAIL_FROM o EMAIL_APP_PASSWORD, no se envió la confirmación.",
+      );
+      return false;
+    }
+
+    const plantillas = await import("@/lib/email/templates");
+    const contenido = {
+      nombre: datos.nombre,
+      codigo: datos.codigo,
+      evento: datos.evento,
+      eslogan: datos.eslogan,
+      inicio: datos.inicio,
+      lugar: datos.lugar,
+      entradas: datos.entradas,
+    };
+
+    await enviarCorreo({
+      to: datos.para,
+      subject: plantillas.asuntoReserva(contenido),
+      html: plantillas.renderReservaHtml(contenido),
+      text: plantillas.renderReservaTexto(contenido),
+      // Sin List-Unsubscribe a propósito: es transaccional, no boletín.
+    });
+
+    return true;
+  } catch (error) {
+    console.error("createReservation (correo de confirmación):", error);
+    return false;
+  }
+}
 
 export const createReservation = createServerFn({ method: "POST" })
   .validator(reservationSchema)
@@ -19,7 +83,7 @@ export const createReservation = createServerFn({ method: "POST" })
 
     const { data: evento, error: eventoError } = await supabase
       .from("events")
-      .select("id, name, capacity, reservations_open")
+      .select("id, name, tagline, starts_at, venue, capacity, reservations_open")
       .eq("slug", data.eventSlug)
       .maybeSingle();
 
@@ -105,7 +169,20 @@ export const createReservation = createServerFn({ method: "POST" })
         }
       }
 
-      return { ok: true, code, eventName: evento.name };
+      // El correo va antes de responder: en Vercel no hay tarea de fondo, y lo
+      // que se dispare después de devolver puede morir con la función.
+      const correoEnviado = await enviarConfirmacion({
+        para: data.holderEmail,
+        nombre: data.holderName,
+        codigo: code,
+        evento: evento.name,
+        eslogan: evento.tagline,
+        inicio: evento.starts_at,
+        lugar: evento.venue,
+        entradas: data.tickets,
+      });
+
+      return { ok: true, code, eventName: evento.name, correoEnviado };
     }
 
     console.error("createReservation: no se pudo generar un código único en 5 intentos.");

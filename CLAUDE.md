@@ -144,11 +144,15 @@ Antes de escribir código, revisa si hay una que cubra la tarea.
 - **Reservas**: funcionando de punta a punta. Formulario público en el modal
   "Reservar cupo" con acompañantes que se abren solos según las entradas, y código
   de puerta de **4 caracteres** (`Q7F3`, sin vocales ni caracteres que se confundan
-  al dictarlos). Gestión
-  completa en `/admin/reservas`.
+  al dictarlos). Al guardarse la reserva se manda **sola** la confirmación por correo
+  (agradecimiento, código, nombre y eslogan del evento); es transaccional, así que no
+  lleva enlace de baja. Si el envío falla, la reserva se guarda igual y la respuesta
+  trae `correoEnviado: false` para no prometer un correo que no salió. El alta a mano
+  desde el panel **no** envía nada. Gestión completa en `/admin/reservas`.
 - **Newsletter**: el formulario guarda **nombre y correo** en Supabase, con campo
-  trampa contra bots. Gestión en `/admin/suscriptores`. Falta el **envío**; el
-  proveedor ya está decidido (SMTP de Gmail con App Password, ver skill `email`).
+  trampa contra bots. Gestión en `/admin/suscriptores`. El **envío** se redacta y se
+  manda por lotes desde `/admin/boletin`, por el SMTP de Gmail con App Password
+  (ver skill `email`), con baja por token en `/baja`.
 - **Panel de admin**: `/admin` con login por clave compartida, sesión sellada
   (`nm_admin`, HttpOnly + Secure + SameSite=Lax, 8 h) y límite de intentos por IP.
   Secciones: Resumen (donde se gestiona el acceso de puerta), Reservas y
@@ -202,7 +206,7 @@ por PostgREST, que no permite crear ni alterar tablas. Comprueba el estado con
 | Base de datos     | **Supabase** (Postgres). Acceso solo desde el servidor con la clave secreta (`sb_secret_…`, en `SUPABASE_SECRET_KEY`); RLS activo y sin policies                                              |
 | Acceso del equipo | Panel de admin en la propia página + Table Editor de Supabase como respaldo                                                                                                                   |
 | Auth del admin    | Una clave compartida. Hash en variable de entorno + sesión sellada de TanStack Start                                                                                                          |
-| Notificaciones    | Manuales, desde el panel. Nunca automáticas                                                                                                                                                   |
+| Notificaciones    | El boletín, manual desde el panel. La confirmación de reserva sí es automática: es transaccional, la pidió la persona                                                                         |
 | Cédula            | **Fuera por ahora.** Se documentó cómo añadirla en el futuro si hace falta                                                                                                                    |
 | Correo            | **SMTP de Gmail** con App Password de `nemorphictechno@gmail.com`: sin dominio propio es lo que mejor llega, porque lo firma Google. Migrar a Resend al comprar dominio es cambiar un archivo |
 

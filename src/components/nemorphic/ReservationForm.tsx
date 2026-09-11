@@ -7,7 +7,7 @@ import { createReservation } from "@/actions/reservations";
 import { getOpenEvents } from "@/actions/events";
 import { MAX_TICKETS, reservationSchema, type ReservationInput } from "@/schemas/reservation";
 
-type Confirmacion = { code: string; eventName: string };
+type Confirmacion = { code: string; eventName: string; correoEnviado: boolean };
 
 function formatearFecha(iso: string): string {
   return new Intl.DateTimeFormat("es-CO", {
@@ -68,7 +68,11 @@ export function ReservationForm({ onDone }: { onDone: () => void }) {
         form.setError("root", { message: resultado.message });
         return;
       }
-      setConfirmacion({ code: resultado.code, eventName: resultado.eventName });
+      setConfirmacion({
+        code: resultado.code,
+        eventName: resultado.eventName,
+        correoEnviado: resultado.correoEnviado,
+      });
     },
     onError: () => {
       form.setError("root", {
@@ -85,6 +89,11 @@ export function ReservationForm({ onDone }: { onDone: () => void }) {
         <p className="nm-body-text">
           Guarda este código: es lo que debes presentar en la entrada de{" "}
           <strong>{confirmacion.eventName}</strong>. Te esperamos.
+        </p>
+        <p className="nm-reserva-ok-correo">
+          {confirmacion.correoEnviado
+            ? "Te lo enviamos también por correo. Si no lo ves, revisa la carpeta de spam."
+            : "No pudimos enviarte el correo de confirmación, así que guarda el código de aquí."}
         </p>
 
         <div className="nm-reserva-ok-acciones">

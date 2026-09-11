@@ -258,3 +258,246 @@ export const TOKEN_DE_EJEMPLO = "00000000-0000-0000-0000-000000000000";
 export function urlDeBaja(token: string): string {
   return `${getSiteUrl()}/baja?token=${token}`;
 }
+
+// ---------------------------------------------------------------------------
+// Confirmación de reserva
+//
+// Es un correo **transaccional**: lo dispara algo que la persona acaba de pedir,
+// así que no lleva enlace de baja (ni debe: no es publicidad, y ponerlo dejaría
+// que alguien se diera de baja del boletín creyendo que cancelaba su cupo).
+// ---------------------------------------------------------------------------
+
+export type ReservaDatos = {
+  nombre: string;
+  /** Código de 4 caracteres que se enseña en la puerta. */
+  codigo: string;
+  evento: string;
+  /** Eslogan del evento. La columna `tagline` es nullable. */
+  eslogan: string | null;
+  /** ISO de `events.starts_at`. Si falta, no se muestra la línea de fecha. */
+  inicio: string | null;
+  lugar: string | null;
+  entradas: number;
+};
+
+/** Fecha larga en hora de Colombia: el correo se lee desde cualquier parte. */
+function fechaLarga(iso: string): string {
+  return new Intl.DateTimeFormat("es-CO", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Bogota",
+  }).format(new Date(iso));
+}
+
+/** Una fila del bloque de datos del evento, solo si el dato existe. */
+function dato(etiqueta: string, valor: string | null): string {
+  if (!valor) return "";
+  return `
+              <tr>
+                <td style="padding:0 0 6px;font-family:${SANS};font-size:14px;line-height:1.6;color:${COLOR.suave};">
+                  <span style="color:${COLOR.tenue};">${escapar(etiqueta)}:</span>
+                  <span style="color:${COLOR.texto};">${escapar(valor)}</span>
+                </td>
+              </tr>`;
+}
+
+export function asuntoReserva({ codigo, evento }: Pick<ReservaDatos, "codigo" | "evento">): string {
+  // El código va en el asunto para poder encontrarlo buscando en el correo, sin
+  // abrirlo: es justo lo que se hace en la fila de la entrada.
+  return `Tu cupo para ${evento} — código ${codigo}`;
+}
+
+export function renderReservaHtml({
+  nombre,
+  codigo,
+  evento,
+  eslogan,
+  inicio,
+  lugar,
+  entradas,
+}: ReservaDatos): string {
+  const sitio = getSiteUrl();
+  const asunto = asuntoReserva({ codigo, evento });
+
+  return `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>${escapar(asunto)}</title>
+</head>
+<body style="margin:0;padding:0;background-color:${COLOR.fondo};">
+
+<!-- Resumen que algunos clientes muestran junto al asunto, sin ocupar espacio -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Tu código de entrada es ${escapar(codigo)}.</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background-color:${COLOR.fondo};padding:24px 12px;">
+  <tr>
+    <td align="center">
+
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:100%;background-color:${COLOR.panel};border:1px solid ${COLOR.borde};">
+
+        <tr>
+          <td style="padding:0;">
+            <img src="${sitio}/Assets/email/cabecera.jpg"
+                 alt="Nemorphic"
+                 width="600"
+                 style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:34px 34px 8px;">
+            <p style="margin:0 0 6px;font-family:${SANS};font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${COLOR.acento};">
+              Cupo reservado
+            </p>
+            <h1 style="margin:0 0 18px;font-family:${SERIF};font-size:27px;line-height:1.25;font-weight:normal;color:${COLOR.acento};">
+              Gracias, ${escapar(nombre)}.
+            </h1>
+            <p style="margin:0 0 6px;font-family:${SANS};font-size:16px;line-height:1.7;color:${COLOR.texto};">
+              Tu cupo para <strong style="color:${COLOR.acento};font-weight:normal;">${escapar(evento)}</strong>
+              está reservado${entradas > 1 ? ` — ${entradas} entradas` : ""}. Gracias por venir a construir
+              esto con nosotros.
+            </p>
+          </td>
+        </tr>
+
+        <!-- El código: es lo único que la persona necesita encontrar rápido -->
+        <tr>
+          <td style="padding:16px 34px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="background-color:${COLOR.fondo};border:1px solid ${COLOR.acento};">
+              <tr>
+                <td align="center" style="padding:22px 16px 18px;">
+                  <p style="margin:0 0 8px;font-family:${SANS};font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${COLOR.tenue};">
+                    Tu código de entrada
+                  </p>
+                  <p style="margin:0;font-family:${SERIF};font-size:42px;line-height:1.1;letter-spacing:10px;color:${COLOR.acento};">
+                    ${escapar(codigo)}
+                  </p>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:10px 0 0;font-family:${SANS};font-size:13px;line-height:1.6;color:${COLOR.suave};">
+              Enséñalo en la entrada. No hace falta imprimir nada.
+            </p>
+          </td>
+        </tr>
+
+        <!-- El evento y su eslogan -->
+        <tr>
+          <td style="padding:26px 34px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="border-left:2px solid ${COLOR.violeta};">
+              <tr>
+                <td style="padding:4px 0 4px 16px;">
+                  <p style="margin:0 0 4px;font-family:${SERIF};font-size:22px;line-height:1.25;color:${COLOR.texto};">
+                    ${escapar(evento)}
+                  </p>
+                  ${
+                    eslogan
+                      ? `<p style="margin:0;font-family:${SERIF};font-size:16px;line-height:1.5;font-style:italic;color:${COLOR.acento};">
+                    ${escapar(eslogan)}
+                  </p>`
+                      : ""
+                  }
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:20px 34px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${dato(
+              "Cuándo",
+              inicio ? fechaLarga(inicio) : null,
+            )}${dato("Dónde", lugar)}${dato("A nombre de", nombre)}
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:24px 34px 34px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="background-color:${COLOR.violeta};">
+                  <a href="${sitio}"
+                     style="display:inline-block;padding:13px 26px;font-family:${SANS};font-size:14px;letter-spacing:1px;color:${COLOR.texto};text-decoration:none;">
+                    Ver la web
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:22px 34px 26px;border-top:1px solid ${COLOR.borde};">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="left" valign="middle"
+                    style="font-family:${SANS};font-size:12px;line-height:1.7;color:${COLOR.suave};">
+                  <strong style="color:${COLOR.acento};font-weight:normal;">Nemorphic</strong><br />
+                  Recibes este correo porque reservaste un cupo en nuestra web.<br />
+                  Si no fuiste tú, respóndenos y lo anulamos.
+                </td>
+                <td align="right" valign="bottom" width="60">
+                  <img src="${sitio}/Assets/email/marca.jpg"
+                       alt=""
+                       width="46"
+                       style="display:block;width:46px;height:auto;border:0;opacity:0.9;" />
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+</body>
+</html>`;
+}
+
+export function renderReservaTexto({
+  nombre,
+  codigo,
+  evento,
+  eslogan,
+  inicio,
+  lugar,
+  entradas,
+}: ReservaDatos): string {
+  return [
+    "NEMORPHIC — Cupo reservado",
+    "",
+    `Gracias, ${nombre}.`,
+    "",
+    `Tu cupo para ${evento} está reservado${entradas > 1 ? ` (${entradas} entradas)` : ""}.`,
+    "Gracias por venir a construir esto con nosotros.",
+    "",
+    `TU CÓDIGO DE ENTRADA: ${codigo}`,
+    "Enséñalo en la entrada. No hace falta imprimir nada.",
+    "",
+    evento,
+    ...(eslogan ? [eslogan] : []),
+    "",
+    ...(inicio ? [`Cuándo: ${fechaLarga(inicio)}`] : []),
+    ...(lugar ? [`Dónde: ${lugar}`] : []),
+    `A nombre de: ${nombre}`,
+    "",
+    "—",
+    `Ver la web: ${getSiteUrl()}`,
+    "",
+    "Recibes este correo porque reservaste un cupo en nuestra web.",
+    "Si no fuiste tú, respóndenos y lo anulamos.",
+  ].join("\n");
+}

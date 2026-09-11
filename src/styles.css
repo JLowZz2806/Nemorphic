@@ -1585,6 +1585,15 @@ select.nm-input option {
   margin-top: 1.5rem;
 }
 
+/* Aviso de que el código también salió por correo, bajo el mensaje de la
+   confirmación: es secundario, así que va más tenue y más pequeño. */
+.nm-reserva-ok-correo {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: rgb(255 255 255 / 62%);
+}
+
 .nm-reserva-ok-acciones {
   display: flex;
   flex-wrap: wrap;
