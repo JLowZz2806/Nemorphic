@@ -55,6 +55,8 @@ function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [modal, setModal] = useState<null | "noticias" | "tienda" | "contacto" | "reservar">(null);
   const [fallbacks, setFallbacks] = useState<Record<string, boolean>>({});
+  // El formulario de suscripcion vive escondido en Noticias hasta que lo piden.
+  const [noticiasNewsletter, setNoticiasNewsletter] = useState(false);
   // Cual llega preseleccionado al formulario. Null = que elija la persona.
   const [reservaSlug, setReservaSlug] = useState<string | null>(null);
   const [releasesBgOffset, setReleasesBgOffset] = useState(0);
@@ -465,7 +467,14 @@ function Index() {
       </Modal>
 
       {/* MODAL NOTICIAS */}
-      <Modal open={modal === "noticias"} onClose={() => setModal(null)} title="Noticias">
+      <Modal
+        open={modal === "noticias"}
+        onClose={() => {
+          setModal(null);
+          setNoticiasNewsletter(false);
+        }}
+        title="Noticias"
+      >
         <div className="space-y-8">
           <article>
             <h3 className="nm-subtitle">Nuevo EP en camino</h3>
@@ -473,15 +482,29 @@ function Index() {
               Estamos trabajando en los últimos detalles del próximo lanzamiento. Mantente atento a
               nuestras redes.
             </p>
+            {noticiasNewsletter ? (
+              <div className="mt-4">
+                <NewsletterForm />
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="nm-btn mt-4"
+                onClick={() => setNoticiasNewsletter(true)}
+              >
+                Suscríbete y mantente conectado
+              </button>
+            )}
           </article>
 
           <article>
-            <h3 className="nm-subtitle">Nemorphic Session #001 - Nyrae</h3>
+            <h3 className="nm-subtitle">Nemorphic Session #017 - Abrut</h3>
             <p className="nm-body-text mt-2">
-              Ya disponible en SoundCloud. Un viaje sonoro de 2 horas.
+              Ya disponible en SoundCloud. Un viaje de 2 horas y 40 minutos lleno de percusiones
+              intensas e hipnóticas.
             </p>
             <a
-              href="https://soundcloud.com/nemorphic/nms-001-nyrae"
+              href="https://soundcloud.com/nemorphic/nms-017-abrut"
               target="_blank"
               rel="noopener noreferrer"
               className="nm-btn mt-4"
