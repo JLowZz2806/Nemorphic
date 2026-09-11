@@ -297,6 +297,16 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     (await fallo(() => ajustes.getDoorAccessInfo())) === "No autorizado",
   );
 
+  // getDoorStatus es lo unico que se pide sin sesion: dice si se entra y si se
+  // entra por ser admin, que es lo que /puerta avisa en pantalla. Sin ninguna
+  // cookie las dos cosas son false, o la puerta quedaria abierta.
+  const estadoPuerta = await puerta.getDoorStatus();
+  ok(
+    "getDoorStatus sin sesion no autoriza ni dice que seas admin",
+    estadoPuerta.autorizado === false && estadoPuerta.comoAdmin === false,
+    `autorizado ${estadoPuerta.autorizado}, comoAdmin ${estadoPuerta.comoAdmin}`,
+  );
+
   grupo("SEGURIDAD/FUNCIONALIDAD: clave de puerta");
   if (!migracion0003) {
     saltado("todo el grupo", "falta aplicar 0003_pagos_y_puerta.sql en Supabase");
@@ -418,6 +428,72 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     }
   }
 
+  grupo("FUNCIONALIDAD: plantilla del boletin");
+  {
+    const plantillas = await import("@/lib/email/templates");
+    const urlBaja = plantillas.urlDeBaja(plantillas.TOKEN_DE_EJEMPLO);
+    const datos = {
+      asunto: "Sesion nueva",
+      cuerpo: "Primer parrafo.\n\nSegundo parrafo.",
+      unsubscribeUrl: urlBaja,
+    };
+
+    const conNombre = plantillas.renderBoletinHtml({ ...datos, nombre: "Ana Prueba" });
+    ok("el HTML saluda con el nombre", conNombre.includes("Hola, Ana Prueba."));
+    ok("el HTML lleva el enlace de baja", conNombre.includes(urlBaja));
+
+    // La columna es nullable: un suscriptor antiguo puede no tener nombre.
+    const sinNombre = plantillas.renderBoletinHtml({ ...datos, nombre: null });
+    ok(
+      "sin nombre saluda igual, sin dejar el hueco",
+      sinNombre.includes("Hola.") && !sinNombre.includes("Hola, ."),
+    );
+
+    ok(
+      "la version en texto tambien personaliza",
+      plantillas
+        .renderBoletinTexto({ ...datos, nombre: "Ana Prueba" })
+        .includes("Hola, Ana Prueba."),
+    );
+
+    // La casilla del panel: mismo correo, con la nota de "muevenos a Principal".
+    const conAviso = plantillas.renderBoletinHtml({
+      ...datos,
+      nombre: "Ana Prueba",
+      avisoPromociones: true,
+    });
+    const sinAviso = plantillas.renderBoletinHtml({
+      ...datos,
+      nombre: "Ana Prueba",
+      avisoPromociones: false,
+    });
+    ok(
+      "con la casilla marcada aparece la nota de Principal",
+      conAviso.includes("Promociones") && conAviso.includes("Arrastra este correo"),
+    );
+    ok("sin marcarla no aparece", !sinAviso.includes("Arrastra este correo"));
+    ok("la casilla solo anade la nota, no cambia el resto", conAviso.length > sinAviso.length);
+    ok(
+      "la nota tambien va en el texto plano",
+      plantillas
+        .renderBoletinTexto({ ...datos, nombre: null, avisoPromociones: true })
+        .includes("Promociones") &&
+        !plantillas
+          .renderBoletinTexto({ ...datos, nombre: null, avisoPromociones: false })
+          .includes("Promociones"),
+    );
+
+    // El nombre sale de la base y el cuerpo lo escribe el panel: sin escapar,
+    // cualquiera de los dos entraria como HTML en el correo.
+    const conHtml = plantillas.renderBoletinHtml({
+      ...datos,
+      nombre: "<script>alert(1)</script>",
+      cuerpo: "Texto <b>con etiquetas</b>",
+    });
+    ok("se escapa el nombre", !conHtml.includes("<script>"));
+    ok("se escapa el cuerpo", !conHtml.includes("<b>con etiquetas</b>"));
+  }
+
   grupo("SEGURIDAD: las acciones del boletin exigen sesion de admin");
   ok("getEstadoCorreo rechaza", (await fallo(() => boletin.getEstadoCorreo())) === "No autorizado");
   ok("listarCampanas rechaza", (await fallo(() => boletin.listarCampanas())) === "No autorizado");
@@ -463,10 +539,26 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
       .select("unsubscribe_token")
       .single();
 
+    // Un uuid que no es de nadie. No vale el de ceros: ese es TOKEN_DE_EJEMPLO
+    // y tiene respuesta propia, asi que probarlo aqui no probaria nada.
     const conTokenMalo = await baja.unsubscribe({
-      data: { token: "00000000-0000-0000-0000-000000000000" },
+      data: { token: "11111111-2222-3333-4444-555555555555" },
     });
-    ok("un token que no existe se rechaza", !conTokenMalo.ok);
+    ok(
+      "un token que no existe se rechaza",
+      !conTokenMalo.ok && conTokenMalo.motivo === "token-invalido",
+      conTokenMalo.ok ? "dio de baja a alguien" : conTokenMalo.motivo,
+    );
+
+    // El enlace que llevan la vista previa y el correo de prueba: no da de baja a
+    // nadie y se distingue para que /baja lo explique en vez de dar un error.
+    const { TOKEN_DE_EJEMPLO } = await import("@/lib/email/templates");
+    const conEjemplo = await baja.unsubscribe({ data: { token: TOKEN_DE_EJEMPLO } });
+    ok(
+      "el token de ejemplo se reconoce como tal",
+      !conEjemplo.ok && conEjemplo.motivo === "token-de-ejemplo",
+      conEjemplo.ok ? "dio de baja a alguien" : conEjemplo.motivo,
+    );
 
     const r = await baja.unsubscribe({ data: { token: nuevo.unsubscribe_token } });
     ok("el token correcto da de baja", r.ok === true);

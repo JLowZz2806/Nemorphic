@@ -34,6 +34,9 @@ const CHECKS = [
   ["family=DM+Serif+Display", "DM Serif Display cargada"],
   ["family=Manrope", "Manrope cargada"],
   ["Reservar mi cupo", "botón de reserva de cupo"],
+  // El formulario del boletín vive dentro del modal de contacto, que solo se
+  // monta al abrirlo: por SSR solo se puede comprobar el botón que lo abre.
+  ['aria-label="Conecta con Nemorphic"', "botón que abre el boletín"],
 ];
 
 function parseArgs() {
@@ -134,7 +137,7 @@ async function main() {
 
   // Cada sección del panel se comprueba por separado: una ruta nueva que se
   // olvide de colgar del layout protegido quedaría abierta sin que nadie lo note.
-  for (const seccion of ["/admin/reservas", "/admin/suscriptores"]) {
+  for (const seccion of ["/admin/reservas", "/admin/suscriptores", "/admin/boletin"]) {
     const respuesta = await fetch(`${baseUrl}${seccion}`, { redirect: "manual" });
     const protegida =
       respuesta.status >= 300 &&
@@ -165,6 +168,17 @@ async function main() {
     failures.push(`GET /puerta/login no muestra el formulario (status ${puertaLogin.status})`);
   }
 
+  // La baja del boletín es una obligación legal: el enlace del correo tiene que
+  // abrir sin sesión. Sin token, la página lo explica en vez de romperse.
+  const baja = await fetch(`${baseUrl}/baja`);
+  const bajaHtml = await baja.text();
+  if (baja.status !== 200 || !bajaHtml.includes("Enlace incompleto")) {
+    failures.push(`GET /baja no muestra la página de baja (status ${baja.status})`);
+  }
+  if (!bajaHtml.includes("noindex")) {
+    failures.push("La página de baja no lleva la meta robots noindex");
+  }
+
   const loginPage = await fetch(`${baseUrl}/admin/login`);
   const loginHtml = await loginPage.text();
   if (loginPage.status !== 200 || !loginHtml.includes("Clave de acceso")) {
@@ -191,7 +205,7 @@ async function main() {
   }
 
   console.log(
-    `smoke: OK — ${CHECKS.length + 7} comprobaciones sobre ${baseUrl} ` +
+    `smoke: OK — ${CHECKS.length + 10} comprobaciones sobre ${baseUrl} ` +
       `(home ${html.length} bytes, panel de admin protegido)`,
   );
   process.exit(0);
