@@ -209,9 +209,9 @@ estado con `npm run db:status`.
 ## Despliegue
 
 Cada `push` a `main` despliega automáticamente en
-[Vercel](https://nemorphic.vercel.app). El repositorio también está conectado a
-Lovable, así que **no se debe reescribir la historia publicada** (nada de
-`rebase`, `amend`, `squash` ni `force-push`): rompería la sincronía.
+[Vercel](https://nemorphic.vercel.app). `main` está publicado, así que **no se debe
+reescribir la historia** (nada de `rebase`, `amend`, `squash` ni `force-push`):
+rompería el clon de cualquiera que lo tenga.
 
 Un detalle que confunde: `npm run build` **en local** genera un bundle de Cloudflare,
 porque esa es la configuración por defecto que hereda el proyecto. En Vercel, Nitro

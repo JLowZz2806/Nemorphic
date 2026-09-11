@@ -227,7 +227,11 @@ function Reservas() {
       }
       await refrescar();
       setAnadiendo(false);
-      toast.success(`Reserva creada con el código ${resultado.code}`);
+      toast.success(
+        resultado.correoEnviado
+          ? `Reserva creada con el código ${resultado.code}. Se le envió por correo.`
+          : `Reserva creada con el código ${resultado.code}. NO salió el correo: pásaselo tú.`,
+      );
     },
     onError: () => toast.error("No se pudo crear. Intenta de nuevo."),
   });

@@ -166,6 +166,10 @@ export const setReservationStatus = createServerFn({ method: "POST" })
  * Alta manual desde el panel, para cuando alguien pide su cupo por WhatsApp o en
  * persona. A diferencia del formulario público, no comprueba el aforo: quien lo
  * usa es del equipo y puede necesitar meter a alguien por encima del límite.
+ *
+ * Manda la misma confirmación que el formulario público: quien pide el cupo por
+ * WhatsApp o por Instagram necesita su código igual que cualquiera, y dictárselo
+ * a mano es de donde salen los códigos mal copiados.
  */
 export const createReservationAsAdmin = createServerFn({ method: "POST" })
   .validator(adminReservationSchema)
@@ -177,7 +181,7 @@ export const createReservationAsAdmin = createServerFn({ method: "POST" })
 
     const { data: evento, error: eventoError } = await supabase
       .from("events")
-      .select("id")
+      .select("id, name, tagline, starts_at, venue")
       .eq("slug", data.eventSlug)
       .maybeSingle();
 
@@ -224,7 +228,19 @@ export const createReservationAsAdmin = createServerFn({ method: "POST" })
         }
       }
 
-      return { ok: true as const, code };
+      const { enviarConfirmacionDeReserva } = await import("@/lib/email/reserva");
+      const correoEnviado = await enviarConfirmacionDeReserva({
+        para: data.holderEmail,
+        nombre: data.holderName,
+        codigo: code,
+        evento: evento.name,
+        eslogan: evento.tagline,
+        inicio: evento.starts_at,
+        lugar: evento.venue,
+        entradas: data.tickets,
+      });
+
+      return { ok: true as const, code, correoEnviado };
     }
 
     return { ok: false as const, message: "No se pudo generar un código único." };

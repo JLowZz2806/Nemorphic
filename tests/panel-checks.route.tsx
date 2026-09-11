@@ -564,6 +564,15 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     );
     ok("con una entrada no dice el numero", !minimo.includes("1 entradas"));
 
+    // El envio compartido por el formulario publico y por el alta del panel.
+    // Aqui el correo esta apagado, asi que tiene que decir que no salio en vez de
+    // reventar: la reserva ya esta guardada y eso es lo que importa.
+    const { enviarConfirmacionDeReserva } = await import("@/lib/email/reserva");
+    ok(
+      "sin correo configurado el envio avisa en vez de fallar",
+      (await enviarConfirmacionDeReserva({ ...reserva, para: "nadie@ejemplo.test" })) === false,
+    );
+
     // El nombre y el evento vienen de un formulario publico y de la base.
     const conHtml = plantillas.renderReservaHtml({
       ...reserva,

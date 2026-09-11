@@ -16,59 +16,6 @@ export type ReservationResult =
     }
   | { ok: false; message: string };
 
-/**
- * Manda la confirmación con el código de entrada.
- *
- * Nunca tira hacia arriba: la reserva ya está guardada y es lo que importa. Si
- * el correo falla, la persona sigue viendo el código en pantalla y el equipo lo
- * tiene en /admin/reservas, así que se registra el fallo y se sigue.
- */
-async function enviarConfirmacion(datos: {
-  para: string;
-  nombre: string;
-  codigo: string;
-  evento: string;
-  eslogan: string | null;
-  inicio: string | null;
-  lugar: string | null;
-  entradas: number;
-}): Promise<boolean> {
-  try {
-    const { isEmailConfigured, enviarCorreo } = await import("@/lib/email/provider");
-
-    if (!isEmailConfigured()) {
-      console.error(
-        "createReservation: faltan EMAIL_FROM o EMAIL_APP_PASSWORD, no se envió la confirmación.",
-      );
-      return false;
-    }
-
-    const plantillas = await import("@/lib/email/templates");
-    const contenido = {
-      nombre: datos.nombre,
-      codigo: datos.codigo,
-      evento: datos.evento,
-      eslogan: datos.eslogan,
-      inicio: datos.inicio,
-      lugar: datos.lugar,
-      entradas: datos.entradas,
-    };
-
-    await enviarCorreo({
-      to: datos.para,
-      subject: plantillas.asuntoReserva(contenido),
-      html: plantillas.renderReservaHtml(contenido),
-      text: plantillas.renderReservaTexto(contenido),
-      // Sin List-Unsubscribe a propósito: es transaccional, no boletín.
-    });
-
-    return true;
-  } catch (error) {
-    console.error("createReservation (correo de confirmación):", error);
-    return false;
-  }
-}
-
 export const createReservation = createServerFn({ method: "POST" })
   .validator(reservationSchema)
   .handler(async ({ data }): Promise<ReservationResult> => {
@@ -171,7 +118,8 @@ export const createReservation = createServerFn({ method: "POST" })
 
       // El correo va antes de responder: en Vercel no hay tarea de fondo, y lo
       // que se dispare después de devolver puede morir con la función.
-      const correoEnviado = await enviarConfirmacion({
+      const { enviarConfirmacionDeReserva } = await import("@/lib/email/reserva");
+      const correoEnviado = await enviarConfirmacionDeReserva({
         para: data.holderEmail,
         nombre: data.holderName,
         codigo: code,

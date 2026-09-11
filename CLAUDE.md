@@ -1,7 +1,8 @@
 # Nemorphic — guía de trabajo
 
-Sitio del sello techno **Nemorphic** (español, one-page). Repo sincronizado con
-Lovable; ver `AGENTS.md` antes de tocar el historial de git.
+Sitio del sello techno **Nemorphic** (español, one-page). El proyecto ya no se
+edita desde el editor de Lovable, pero el **build sigue siendo suyo**: ver
+`AGENTS.md` para qué se puede tocar y qué no.
 
 ## Stack
 
@@ -109,8 +110,8 @@ docs/                 documentación: arquitectura, base de datos y guía de ope
   `src/actions/`.
 - **Dependencias**: `bunfig.toml` impone 24 h mínimas desde la publicación de un
   paquete. Preguntar antes de añadir una dependencia nueva.
-- **Git**: no reescribir historia publicada (rebase/amend/squash/force-push) —
-  rompe la sincronía con Lovable.
+- **Git**: no reescribir historia publicada (rebase/amend/squash/force-push).
+  `main` está en GitHub y reescribirlo rompe el clon de cualquiera que lo tenga.
 
 ## Documentación
 
@@ -148,7 +149,10 @@ Antes de escribir código, revisa si hay una que cubra la tarea.
   (agradecimiento, código, nombre y eslogan del evento); es transaccional, así que no
   lleva enlace de baja. Si el envío falla, la reserva se guarda igual y la respuesta
   trae `correoEnviado: false` para no prometer un correo que no salió. El alta a mano
-  desde el panel **no** envía nada. Gestión completa en `/admin/reservas`.
+  desde el panel manda el mismo correo (quien pide el cupo por WhatsApp o Instagram
+  también necesita su código), y el aviso del panel dice si salió. El envío está en
+  `src/lib/email/reserva.ts`, compartido por las dos vías. Gestión completa en
+  `/admin/reservas`.
 - **Newsletter**: el formulario guarda **nombre y correo** en Supabase, con campo
   trampa contra bots. Gestión en `/admin/suscriptores`. El **envío** se redacta y se
   manda por lotes desde `/admin/boletin`, por el SMTP de Gmail con App Password

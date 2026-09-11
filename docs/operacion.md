@@ -103,12 +103,13 @@ Quien reserva desde la web recibe **al instante** un correo con el agradecimient
 código de entrada, y el nombre y el eslogan del evento. No hay que hacer nada: sale
 solo al guardarse la reserva.
 
-Dos cosas que conviene tener claras:
+Las reservas que **añades tú a mano** desde el panel mandan el mismo correo, así que
+quien te escribió por WhatsApp o por Instagram recibe su código sin que se lo tengas
+que dictar. Al guardarla, el aviso de arriba te dice si el correo salió; si no salió,
+pásale el código tú.
 
-- **Una reserva añadida a mano desde el panel no manda correo.** Esa persona te
-  escribió por WhatsApp, así que pásale el código por ahí mismo.
-- **Cambiar el correo de una reserva no reenvía nada**, y el código nunca cambia. Si
-  alguien lo perdió, búscalo en _Reservas_ y díselo.
+Lo que **no** manda correo: **cambiar el correo de una reserva no reenvía nada**, y el
+código nunca cambia. Si alguien lo perdió, búscalo en _Reservas_ y díselo.
 
 Si el envío falla, la reserva **se guarda igual**: el código sigue en pantalla y en el
 panel. La persona ve un aviso de que no le llegó el correo.
