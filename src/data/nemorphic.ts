@@ -16,7 +16,7 @@ export const artistas: Artista[] = [
   },
   {
     nombre: "DSTRKT",
-    imagen: "/Assets/artistas/dstrkt.JPG",
+    imagen: "/Assets/artistas/ditri.jpg",
     descripcion:
       "DSTRKT diseña progresiones hipnóticas y atmósferas densas que transforman la pista en un espacio de movimiento constante, trance envolvente y presencia emocional.",
     soundcloud:

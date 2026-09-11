@@ -264,6 +264,8 @@ function Index() {
                         src={artista.imagen}
                         alt={artista.nombre}
                         className="nm-artist-img"
+                        width={340}
+                        height={340}
                         loading="lazy"
                         decoding="async"
                         ref={(el) => {
