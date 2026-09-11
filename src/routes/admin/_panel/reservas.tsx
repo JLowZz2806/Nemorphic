@@ -478,6 +478,15 @@ function Reservas() {
                     </button>
                   </p>
                 )}
+
+                {/* Cuál sale en la portada se elige en Resumen: es una decisión de
+                    anuncio, no del día del evento. Aquí solo se dice cómo está. */}
+                {evento.featured && (
+                  <p className="nm-admin-card-texto">
+                    <strong>Este es el evento que se ve en la portada.</strong> Los demás siguen
+                    visibles en la página de eventos.
+                  </p>
+                )}
               </section>
 
               {evento.reservas.length === 0 ? (

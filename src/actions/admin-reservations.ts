@@ -35,6 +35,8 @@ export type EventoAdmin = {
   reservationsOpen: boolean;
   presalePrice: number | null;
   doorPrice: number | null;
+  /** Si es el que la landing muestra en #eventos. */
+  featured: boolean;
   /** Suma de lo cobrado, en pesos: reservas pagadas y no canceladas. */
   totalCobrado: number;
   /** Suma de lo que falta cobrar. */
@@ -55,7 +57,9 @@ export const listReservations = createServerFn({ method: "GET" }).handler(
 
     const { data: eventos, error: eventosError } = await supabase
       .from("events")
-      .select("id, slug, name, starts_at, capacity, reservations_open, presale_price, door_price")
+      .select(
+        "id, slug, name, starts_at, capacity, reservations_open, presale_price, door_price, featured",
+      )
       .order("starts_at", { ascending: false });
 
     if (eventosError) {
@@ -124,6 +128,7 @@ export const listReservations = createServerFn({ method: "GET" }).handler(
         reservationsOpen: evento.reservations_open,
         presalePrice: evento.presale_price,
         doorPrice: evento.door_price,
+        featured: evento.featured ?? false,
         reservas: propias,
         entradasComprometidas: vivas.reduce((suma, r) => suma + r.tickets, 0),
         totalCobrado: vivas

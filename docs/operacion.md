@@ -97,6 +97,24 @@ evento.
 
 ---
 
+## Eventos: cuál se ve en la web
+
+La landing muestra **un solo evento**, el destacado. Los demás están en la página
+**Eventos** (`/eventos`), a la que se llega con el botón que hay junto al título de
+la sección. Cada tarjeta de esa página abre la reserva **con ese evento ya elegido**,
+así que su enlace se puede mandar por WhatsApp o Instagram:
+`nemorphic.vercel.app/eventos?reservar=umbra`.
+
+Para cambiar cuál se destaca: **`/admin` → Resumen → Evento principal**, y pulsa
+**"Mostrar este"** en el que quieras. Solo puede haber uno; al marcar el nuevo, el
+anterior deja de estarlo al instante.
+
+Un evento **sin flyer** no se ve roto: en su lugar sale su nombre sobre el degradado
+de la marca. Lo mismo con el eslogan, el lugar y la hora de cierre — la web enseña lo
+que haya. Así se puede anunciar una fecha en cuanto se confirma, sin esperar al arte.
+
+---
+
 ## Reservas: el correo automático
 
 Quien reserva desde la web recibe **al instante** un correo con el agradecimiento, su
@@ -154,17 +172,18 @@ El **envío** se hace desde **`/admin` → Boletín**, con asunto y cuerpo libre
 
 Estas no se pueden hacer desde el navegador:
 
-| Qué                                     | Por qué                                                                                                                                    |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Crear o editar un evento**            | Los eventos están en la base, pero la sección de la landing con el flyer y la fecha está escrita en el código. Hay que tocar las dos cosas |
-| **Cambiar la clave del panel**          | Está en la configuración de Vercel, no en la base                                                                                          |
-| **Añadir artistas o lanzamientos**      | Están en el código del sitio                                                                                                               |
-| **Cambiar textos o imágenes** de la web | Igual                                                                                                                                      |
+| Qué                                     | Por qué                                                                                 |
+| --------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Crear un evento**                     | Es una fila en la base. Pásale los datos al programador y te devuelve el SQL ya escrito |
+| **Poner el flyer de un evento**         | La imagen vive en el repo, así que entra con un despliegue                              |
+| **Cambiar la clave del panel**          | Está en la configuración de Vercel, no en la base                                       |
+| **Añadir artistas o lanzamientos**      | Están en el código del sitio                                                            |
+| **Cambiar textos o imágenes** de la web | Igual                                                                                   |
 
-> ⚠️ **No crees eventos nuevos directamente en Supabase.** La sección "Eventos" de
-> la página muestra UMBRA escrito a mano, así que un evento nuevo aparecería con el
-> flyer y la fecha equivocados y un botón que reserva para otra cosa. Pásale los
-> datos al programador y se hace en los dos sitios a la vez.
+> La web lee los eventos de la base, así que un evento creado en Supabase aparece
+> solo. Aun así **pásale los datos al programador**: es un `insert` con fechas en
+> hora de Colombia y un `slug` sin espacios ni tildes, y equivocarse ahí deja el
+> evento invisible o con la hora corrida.
 
 ---
 

@@ -71,6 +71,91 @@ export const clearDoorAccessPassword = createServerFn({ method: "POST" }).handle
 });
 
 /** Precios del evento, en pesos y sin decimales. */
+/** Un evento visto desde el panel, solo con lo que hace falta para elegir cuál destacar. */
+export type EventoResumen = {
+  slug: string;
+  name: string;
+  startsAt: string;
+  featured: boolean;
+};
+
+/**
+ * Los eventos que la web puede llegar a mostrar: futuros y con reservas abiertas,
+ * que es exactamente lo que filtra la parte pública.
+ *
+ * Se queda corto a propósito — no trae reservas ni dinero. Para eso está
+ * `/admin/reservas`; esto solo alimenta el selector del destacado.
+ */
+export const listEventsSummary = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Array<EventoResumen>> => {
+    await requireAdmin();
+
+    const { getSupabaseAdmin, isDatabaseConfigured } = await import("@/lib/supabase");
+    if (!isDatabaseConfigured()) return [];
+
+    const { data, error } = await getSupabaseAdmin()
+      .from("events")
+      .select("slug, name, starts_at, featured")
+      .eq("reservations_open", true)
+      .gte("starts_at", new Date().toISOString())
+      .order("starts_at", { ascending: true });
+
+    if (error) {
+      console.error("listEventsSummary:", error);
+      return [];
+    }
+
+    return (data ?? []).map((fila) => ({
+      slug: fila.slug,
+      name: fila.name,
+      startsAt: fila.starts_at,
+      featured: fila.featured ?? false,
+    }));
+  },
+);
+
+/**
+ * Marca qué evento sale en la landing.
+ *
+ * Se apaga el anterior antes de encender el nuevo porque la base solo admite uno
+ * destacado (índice parcial de la migración 0005): hacerlo al revés choca contra
+ * esa restricción.
+ *
+ * No son dos escrituras atómicas. Si fallara la segunda, la web se quedaría sin
+ * destacado y mostraría el evento más próximo, que es justo el comportamiento de
+ * reserva previsto en la landing: se degrada a algo razonable, no a un hueco.
+ */
+export const setFeaturedEvent = createServerFn({ method: "POST" })
+  .validator(z.object({ slug: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    await requireAdmin();
+
+    const { getSupabaseAdmin } = await import("@/lib/supabase");
+    const supabase = getSupabaseAdmin();
+
+    const { error: apagarError } = await supabase
+      .from("events")
+      .update({ featured: false })
+      .eq("featured", true);
+
+    if (apagarError) {
+      console.error("setFeaturedEvent (apagar):", apagarError);
+      return { ok: false as const, message: "No se pudo cambiar el evento destacado." };
+    }
+
+    const { error } = await supabase
+      .from("events")
+      .update({ featured: true })
+      .eq("slug", data.slug);
+
+    if (error) {
+      console.error("setFeaturedEvent (encender):", error);
+      return { ok: false as const, message: "No se pudo cambiar el evento destacado." };
+    }
+
+    return { ok: true as const };
+  });
+
 export const setEventPrices = createServerFn({ method: "POST" })
   .validator(
     z.object({

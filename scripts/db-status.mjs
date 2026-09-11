@@ -58,6 +58,11 @@ const MIGRACIONES = [
       { tabla: "campaign_sends", columnas: "id, campaign_id, subscriber_id, sent_at" },
     ],
   },
+  {
+    archivo: "0005_eventos_multiples.sql",
+    descripcion: "varios eventos a la vez: cuál se destaca en la landing",
+    comprobaciones: [{ tabla: "events", columnas: "featured" }],
+  },
 ];
 
 let pendientes = 0;

@@ -29,6 +29,7 @@ erDiagram
         integer door_price
         integer capacity
         boolean reservations_open
+        boolean featured
     }
     reservations {
         uuid id PK
@@ -79,9 +80,16 @@ erDiagram
 | `presale_price`        | `integer`     | **Lo que paga quien reservó**, aunque pague en la puerta |
 | `door_price`           | `integer`     | Lo que paga quien llega sin reserva. Solo informativo    |
 | `reservations_open`    | `boolean`     | Si el formulario público acepta reservas                 |
+| `featured`             | `boolean`     | El que la landing muestra en `#eventos`. **Solo uno**    |
 
 Los precios van en pesos, sin decimales. `presale_price` es el incentivo de
 reservar: se respeta aunque la persona pague en la entrada.
+
+`featured` marca el evento que sale en la portada. Que solo pueda haber uno lo
+garantiza la base con un índice parcial (`events_un_solo_destacado`), no el panel:
+con dos marcados, la landing elegiría uno distinto según el orden en que Postgres
+devolviera las filas. La consulta pública filtra además por `reservations_open` y por
+fecha futura, así que un evento pasado desaparece de la web sin tocar nada.
 
 ### `reservations`
 

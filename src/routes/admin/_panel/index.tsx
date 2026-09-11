@@ -6,8 +6,11 @@ import { toast } from "sonner";
 import {
   clearDoorAccessPassword,
   getDoorAccessInfo,
+  listEventsSummary,
   setDoorAccessPassword,
+  setFeaturedEvent,
 } from "@/actions/admin-settings";
+import { fechaLarga } from "@/lib/fechas";
 
 export const Route = createFileRoute("/admin/_panel/")({
   component: Resumen,
@@ -23,11 +26,97 @@ function formatearMomento(iso: string): string {
   }).format(new Date(iso));
 }
 
-/** Lo que falta por construir, para que el equipo sepa qué esperar. */
-const proximo = [
-  { titulo: "Eventos", detalle: "Crear y editar eventos desde aquí, sin pasar por el código." },
-  { titulo: "Boletín", detalle: "Redactar y enviar un correo a quienes estén suscritos." },
-];
+/**
+ * Cuál de los eventos abiertos sale en la portada.
+ *
+ * Vive en el Resumen y no en Reservas porque no es una tarea del día del evento:
+ * es decidir qué enseña la web, y se hace una vez por anuncio.
+ */
+function EventoPrincipal() {
+  const queryClient = useQueryClient();
+
+  const eventos = useQuery({
+    queryKey: ["admin", "eventos"],
+    queryFn: () => listEventsSummary(),
+  });
+
+  const destacar = useMutation({
+    mutationFn: (slug: string) => setFeaturedEvent({ data: { slug } }),
+    onSuccess: async (resultado) => {
+      if (!resultado.ok) {
+        toast.error(resultado.message);
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["admin", "eventos"] });
+      toast.success("Cambiado: eso es lo que se ve ahora en la web");
+    },
+    onError: () => toast.error("No se pudo cambiar. Intenta de nuevo."),
+  });
+
+  const lista = eventos.data ?? [];
+  const hayDestacado = lista.some((evento) => evento.featured);
+
+  return (
+    <section className="nm-admin-card" aria-labelledby="nm-admin-evento">
+      <h2 id="nm-admin-evento" className="nm-admin-card-title">
+        Evento principal
+      </h2>
+
+      <p className="nm-admin-card-texto">
+        La portada muestra <strong>un solo evento</strong>, el que marques aquí. Los demás siguen
+        visibles en la página <strong>Eventos</strong>, con su propio botón de reserva.
+      </p>
+
+      {eventos.isLoading && <p className="nm-admin-estado">Cargando eventos…</p>}
+
+      {!eventos.isLoading && lista.length === 0 && (
+        <p className="nm-admin-estado">
+          No hay eventos con reservas abiertas. Pídele al programador que cree el siguiente y
+          aparecerá aquí.
+        </p>
+      )}
+
+      {lista.length > 0 && (
+        <>
+          <ul className="nm-admin-eventos">
+            {lista.map((evento) => (
+              <li key={evento.slug} className="nm-admin-evento-fila">
+                <div>
+                  <p className="nm-admin-evento-nombre">
+                    {evento.name}
+                    {evento.featured && (
+                      <span className="nm-admin-evento-marca">En la portada</span>
+                    )}
+                  </p>
+                  <p className="nm-admin-evento-fecha">{fechaLarga(evento.startsAt)}</p>
+                </div>
+
+                {!evento.featured && (
+                  <button
+                    type="button"
+                    className="nm-admin-enlace"
+                    disabled={destacar.isPending}
+                    onClick={() => destacar.mutate(evento.slug)}
+                  >
+                    {destacar.isPending ? "Cambiando…" : "Mostrar este"}
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          {/* Sin ninguno marcado la web no se rompe, pero conviene decirlo: lo que
+              sale entonces es el más próximo, que puede no ser el que se quiere. */}
+          {!hayDestacado && (
+            <p className="nm-admin-estado">
+              Ninguno está marcado, así que la portada muestra <strong>el más próximo</strong>.
+            </p>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
 
 function AccesoPuerta() {
   const queryClient = useQueryClient();
@@ -170,24 +259,13 @@ function Resumen() {
     <>
       <h1 className="nm-admin-title">Panel de administración</h1>
       <p className="nm-admin-lead">
-        Desde aquí se gestionan las reservas, las personas suscritas y el acceso de la entrada.
+        Desde aquí se gestionan las reservas, las personas suscritas, el boletín, el acceso de la
+        entrada y qué evento se ve en la portada.
       </p>
 
       <AccesoPuerta />
 
-      <section className="nm-admin-card" aria-labelledby="nm-admin-proximo">
-        <h2 id="nm-admin-proximo" className="nm-admin-card-title">
-          En construcción
-        </h2>
-        <ul className="nm-admin-list">
-          {proximo.map((item) => (
-            <li key={item.titulo}>
-              <strong>{item.titulo}</strong>
-              <span>{item.detalle}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <EventoPrincipal />
     </>
   );
 }

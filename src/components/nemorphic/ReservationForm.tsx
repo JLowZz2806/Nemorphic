@@ -18,7 +18,17 @@ function formatearFecha(iso: string): string {
   }).format(new Date(iso));
 }
 
-export function ReservationForm({ onDone }: { onDone: () => void }) {
+export function ReservationForm({
+  onDone,
+  eventoInicial = null,
+}: {
+  onDone: () => void;
+  /**
+   * Evento que llega ya elegido, porque se pulsó "Reservar" en uno concreto.
+   * Null cuando se abre desde un botón general: ahí elige la persona.
+   */
+  eventoInicial?: string | null;
+}) {
   const [confirmacion, setConfirmacion] = useState<Confirmacion | null>(null);
   const [copiado, setCopiado] = useState(false);
 
@@ -31,7 +41,7 @@ export function ReservationForm({ onDone }: { onDone: () => void }) {
   const form = useForm<ReservationInput>({
     resolver: zodResolver(reservationSchema),
     defaultValues: {
-      eventSlug: "",
+      eventSlug: eventoInicial ?? "",
       holderName: "",
       holderEmail: "",
       holderPhone: "",
@@ -53,13 +63,19 @@ export function ReservationForm({ onDone }: { onDone: () => void }) {
     replace(Array.from({ length: necesarios }, (_, i) => ({ name: actuales[i]?.name ?? "" })));
   }, [tickets, replace, form]);
 
-  // Cuando solo hay un evento abierto, se preselecciona.
+  // Qué evento aparece elegido al abrir. Por orden: el que se pidió al abrir el
+  // formulario, o el único que haya. Con varios y sin petición, elige la persona.
   useEffect(() => {
     const lista = eventos.data;
-    if (lista?.length === 1 && lista[0] && !form.getValues("eventSlug")) {
-      form.setValue("eventSlug", lista[0].slug);
-    }
-  }, [eventos.data, form]);
+    if (!lista || form.getValues("eventSlug")) return;
+
+    const pedido =
+      eventoInicial && lista.some((e) => e.slug === eventoInicial) ? eventoInicial : null;
+    const unico = lista.length === 1 ? (lista[0]?.slug ?? null) : null;
+    const elegido = pedido ?? unico;
+
+    if (elegido) form.setValue("eventSlug", elegido);
+  }, [eventos.data, eventoInicial, form]);
 
   const mutation = useMutation({
     mutationFn: (data: ReservationInput) => createReservation({ data }),

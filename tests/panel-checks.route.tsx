@@ -31,6 +31,7 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
   const migracion0004 =
     !(await db.from("campaigns").select("id").limit(1)).error &&
     !(await db.from("campaign_sends").select("id").limit(1)).error;
+  const migracion0005 = !(await db.from("events").select("featured").limit(1)).error;
   const migracion0003 =
     !(await db.from("reservations").select("paid").limit(1)).error &&
     !(await db.from("app_settings").select("key").limit(1)).error;
@@ -307,6 +308,14 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     )) === "No autorizado",
   );
   ok(
+    "listEventsSummary rechaza sin sesion",
+    (await fallo(() => ajustes.listEventsSummary())) === "No autorizado",
+  );
+  ok(
+    "setFeaturedEvent rechaza sin sesion",
+    (await fallo(() => ajustes.setFeaturedEvent({ data: { slug: "umbra" } }))) === "No autorizado",
+  );
+  ok(
     "getDoorAccessInfo rechaza sin sesion",
     (await fallo(() => ajustes.getDoorAccessInfo())) === "No autorizado",
   );
@@ -506,6 +515,106 @@ const correr = createServerFn({ method: "GET" }).handler(async () => {
     });
     ok("se escapa el nombre", !conHtml.includes("<script>"));
     ok("se escapa el cuerpo", !conHtml.includes("<b>con etiquetas</b>"));
+  }
+
+  grupo("FUNCIONALIDAD: agenda de varios eventos");
+  {
+    const fechas = await import("@/lib/fechas");
+    const eventos = await import("@/actions/events");
+
+    // Todo se imprime en hora de Colombia: la fecha de un evento es la del sitio
+    // donde ocurre, no la del navegador de quien mira.
+    ok(
+      "la fecha larga sale en hora de Colombia",
+      fechas.fechaLarga("2026-09-27T21:00:00-05:00") === "Domingo 27 de septiembre",
+      fechas.fechaLarga("2026-09-27T21:00:00-05:00"),
+    );
+    ok(
+      "la fecha corta cabe en una tarjeta",
+      fechas.fechaCorta("2026-10-03T20:00:00-05:00") === "SÁB 3 OCT",
+      fechas.fechaCorta("2026-10-03T20:00:00-05:00"),
+    );
+    ok(
+      "el horario va de inicio a cierre",
+      fechas.horario("2026-09-27T21:00:00-05:00", "2026-09-28T03:00:00-05:00") === "9 PM — 3 AM",
+      fechas.horario("2026-09-27T21:00:00-05:00", "2026-09-28T03:00:00-05:00"),
+    );
+    // Un evento recien anunciado puede no tener hora de cierre.
+    ok(
+      "sin hora de cierre dice desde cuando",
+      fechas.horario("2026-09-27T21:00:00-05:00", null) === "Desde las 9 PM",
+      fechas.horario("2026-09-27T21:00:00-05:00", null),
+    );
+    ok(
+      "el lugar se arma con lo que haya",
+      fechas.lugarCompleto("Epica", "Av. Paralela") === "Epica — Av. Paralela" &&
+        fechas.lugarCompleto(null, null) === "",
+    );
+
+    // Cual sale en la portada: el marcado, y si no hay ninguno el mas proximo.
+    const base = {
+      name: "X",
+      tagline: null,
+      startsAt: "",
+      endsAt: null,
+      venue: null,
+      address: null,
+      posterUrl: null,
+    };
+    const lista = [
+      { ...base, slug: "proximo", featured: false },
+      { ...base, slug: "marcado", featured: true },
+    ];
+    ok("se muestra el evento marcado", eventos.eventoDestacado(lista)?.slug === "marcado");
+    ok(
+      "sin ninguno marcado, el mas proximo",
+      eventos.eventoDestacado(lista.map((e) => ({ ...e, featured: false })))?.slug === "proximo",
+    );
+    ok("sin eventos no hay destacado", eventos.eventoDestacado([]) === undefined);
+
+    // La agenda publica es lo que ve cualquiera: no puede traer datos internos.
+    const publicos = await eventos.getOpenEvents();
+    ok(
+      "la agenda publica no expone aforo ni ids",
+      publicos.every((e) => !Object.prototype.hasOwnProperty.call(e, "capacity") && !("id" in e)),
+    );
+  }
+
+  grupo("BASE: un solo evento destacado");
+  if (!migracion0005) {
+    saltado("todo el grupo", "falta aplicar 0005_eventos_multiples.sql en Supabase");
+  } else {
+    const { data: destacados } = await db.from("events").select("slug").eq("featured", true);
+    ok(
+      "hay como mucho un destacado",
+      (destacados ?? []).length <= 1,
+      (destacados ?? []).map((e) => e.slug).join(", ") || "ninguno",
+    );
+
+    // La base lo impide por su cuenta: si dependiera solo del panel, dos pestañas
+    // abiertas podrian dejar dos destacados y la portada elegiria al azar.
+    const { data: otro } = await db
+      .from("events")
+      .select("slug")
+      .eq("featured", false)
+      .limit(1)
+      .maybeSingle();
+
+    if (!otro) {
+      saltado("la base rechaza dos destacados", "solo hay un evento en la base");
+    } else {
+      const { error: errorDoble } = await db
+        .from("events")
+        .update({ featured: true })
+        .eq("slug", otro.slug);
+      ok(
+        "la base rechaza dos destacados a la vez",
+        Boolean(errorDoble),
+        errorDoble?.code ?? "LO ACEPTO",
+      );
+      // Si por lo que sea lo acepto, se deshace: esto corre contra la base real.
+      if (!errorDoble) await db.from("events").update({ featured: false }).eq("slug", otro.slug);
+    }
   }
 
   grupo("FUNCIONALIDAD: correo de confirmacion de reserva");

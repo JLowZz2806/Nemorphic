@@ -27,7 +27,10 @@ const CHECKS = [
   ["J Løwℤ", "primer artista renderizado"],
   ["Blaue Nacht", "último artista renderizado"],
   ["w.soundcloud.com/player", "embed de SoundCloud"],
+  // El evento sale de la base, no del JSX: si esto falla, o no hay evento
+  // destacado con reservas abiertas, o la consulta se rompió.
   ["UMBRA", "evento destacado"],
+  ["Ver todos los eventos", "enlace a la agenda completa"],
   ["/Assets/logo nemorphic.png", "logo desde /Assets"],
   // Las familias cargadas deben coincidir con --nm-font-display y
   // --nm-font-secondary de styles.css, o el sitio cae al fallback del sistema.
@@ -162,6 +165,20 @@ async function main() {
     );
   }
 
+  // La agenda completa: es pública y se renderiza en el servidor, así que tiene
+  // que traer los dos eventos en el HTML.
+  const agenda = await fetch(`${baseUrl}/eventos`);
+  const agendaHtml = await agenda.text();
+  for (const [needle, label] of [
+    ["Todos los eventos", "título de la agenda"],
+    ["UMBRA", "evento en la agenda"],
+    ["Sembrando Consciencia", "segundo evento en la agenda"],
+  ]) {
+    if (agenda.status !== 200 || !agendaHtml.includes(needle)) {
+      failures.push(`GET /eventos no trae ${label} (status ${agenda.status})`);
+    }
+  }
+
   const puertaLogin = await fetch(`${baseUrl}/puerta/login`);
   const puertaHtml = await puertaLogin.text();
   if (puertaLogin.status !== 200 || !puertaHtml.includes("Clave del evento")) {
@@ -205,7 +222,7 @@ async function main() {
   }
 
   console.log(
-    `smoke: OK — ${CHECKS.length + 10} comprobaciones sobre ${baseUrl} ` +
+    `smoke: OK — ${CHECKS.length + 13} comprobaciones sobre ${baseUrl} ` +
       `(home ${html.length} bytes, panel de admin protegido)`,
   );
   process.exit(0);

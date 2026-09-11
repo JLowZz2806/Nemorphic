@@ -68,8 +68,9 @@ Notas de entorno (Windows):
 src/
   routes/
     __root.tsx        shell HTML, <head>, QueryClientProvider, 404 y error boundary
-    index.tsx         TODA la landing (~560 líneas): nav, hero, quiénes somos,
-                      artistas, lanzamientos, eventos, modales y newsletter
+    index.tsx         TODA la landing (~600 líneas): nav, hero, quiénes somos,
+                      artistas, lanzamientos, evento destacado, modales y newsletter
+    eventos.tsx       agenda pública: todos los eventos abiertos, con reserva directa
     admin/            panel privado: login, layout protegido `_panel` y secciones
     puerta/           control de entrada: login y layout protegido `_lista`
     routeTree.gen.ts  AUTOGENERADO — no editar a mano
@@ -159,9 +160,9 @@ Antes de escribir código, revisa si hay una que cubra la tarea.
   (ver skill `email`), con baja por token en `/baja`.
 - **Panel de admin**: `/admin` con login por clave compartida, sesión sellada
   (`nm_admin`, HttpOnly + Secure + SameSite=Lax, 8 h) y límite de intentos por IP.
-  Secciones: Resumen (donde se gestiona el acceso de puerta), Reservas y
-  Suscriptores; las dos últimas con alta, edición y borrado, para que el equipo no
-  técnico gestione datos sin entrar a Supabase. Sin `SESSION_SECRET` ni
+  Secciones: Resumen (acceso de puerta y **qué evento sale en la portada**),
+  Reservas, Suscriptores y Boletín; las dos de datos con alta, edición y borrado,
+  para que el equipo no técnico gestione datos sin entrar a Supabase. Sin `SESSION_SECRET` ni
   `ADMIN_PASSWORD_HASH` el panel no rompe: redirige al login y ahí avisa de que
   falta configurarlo.
 - **Control de entrada**: `/puerta`, con **clave propia** que se edita desde
@@ -175,12 +176,16 @@ Antes de escribir código, revisa si hay una que cubra la tarea.
   pague en la puerta) y `door_price` (informativo, para quien llega sin reserva).
   Una reserva debe `entradas x presale_price`. Los precios se editan en
   `/admin/reservas`.
-- **Eventos**: viven en la tabla `events`, pero la sección `#eventos` de la landing
-  muestra UMBRA **escrito a mano en el JSX**. La sección del panel para crearlos se
-  descartó: el equipo habla siempre antes de anunciar, así que los eventos se crean
-  a mano. **Al crear uno hay que tocar las dos partes** — la fila en la base y el
-  JSX de la landing — o el sitio mostraría el flyer y la fecha de UMBRA con un botón
-  que reserva para otro evento.
+- **Eventos**: viven en la tabla `events` y **la landing los lee de ahí** (loader
+  SSR en `src/routes/index.tsx`). Un evento es **una fila**: ya no hay nada escrito
+  a mano en el JSX, que era de donde salía el riesgo de enseñar el flyer de uno con
+  el botón que reserva para otro. `#eventos` muestra **el destacado** (`featured`,
+  uno solo — lo impide un índice parcial) y enlaza a `/eventos`, la agenda completa,
+  donde cada tarjeta abre la reserva con ese evento ya elegido
+  (`/eventos?reservar=<slug>` es un enlace compartible). Cuál se destaca se elige en
+  **`/admin` → Resumen**: es una decisión de anuncio, no del día del evento. **Crear un evento sigue siendo un `insert` a mano** en el SQL
+  Editor: el equipo habla antes de anunciar, así que no hay formulario de alta. El
+  flyer y el eslogan pueden faltar; la tarjeta cae a un fondo con el nombre.
 - **Server functions**: en `src/actions/`. `src/start.ts` deja activo el middleware
   CSRF. Cada acción llama por su cuenta a la guarda que le toca, de
   `src/lib/require-admin.ts`: `requireAdmin()` para lo del panel (rechaza incluso

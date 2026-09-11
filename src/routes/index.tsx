@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
+import { eventoDestacado, getOpenEvents } from "../actions/events";
 import { Modal } from "../components/nemorphic/Modal";
+import { PosterEvento } from "../components/nemorphic/PosterEvento";
 import { ReservationForm } from "../components/nemorphic/ReservationForm";
 import { NewsletterForm } from "../components/nemorphic/NewsletterForm";
 import {
@@ -11,6 +13,7 @@ import {
   YoutubeIcon,
 } from "../components/nemorphic/SocialIcons";
 import { HERO_BG, LOGO, artistas, lanzamientos } from "../data/nemorphic";
+import { fechaLarga, horario, lugarCompleto } from "../lib/fechas";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,6 +31,9 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  // La agenda se resuelve en el servidor: llega dentro del HTML, sin un salto
+  // visual al cargar y sin que el buscador vea un hueco donde va el evento.
+  loader: () => getOpenEvents(),
   component: Index,
 });
 
@@ -42,10 +48,15 @@ const navLinks = [
 const artistasOrdenados = [...artistas].sort((a, b) => a.nombre.localeCompare(b.nombre));
 
 function Index() {
+  const eventos = Route.useLoaderData();
+  const destacado = eventoDestacado(eventos);
+
   const [navVisible, setNavVisible] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [modal, setModal] = useState<null | "noticias" | "tienda" | "contacto" | "reservar">(null);
   const [fallbacks, setFallbacks] = useState<Record<string, boolean>>({});
+  // Cual llega preseleccionado al formulario. Null = que elija la persona.
+  const [reservaSlug, setReservaSlug] = useState<string | null>(null);
   const [releasesBgOffset, setReleasesBgOffset] = useState(0);
 
   useEffect(() => {
@@ -343,48 +354,74 @@ function Index() {
         <section id="eventos" className="nm-section nm-grain">
           <div className="nm-container">
             <p className="nm-eyebrow">04 — Agenda</p>
-            <h2 className="nm-display nm-section-title mt-3">Eventos</h2>
+            <div className="nm-section-titulo-fila">
+              <h2 className="nm-display nm-section-title mt-3">Eventos</h2>
+              {eventos.length > 1 && (
+                <Link to="/eventos" className="nm-btn nm-eventos-todos">
+                  Ver todos los eventos ({eventos.length})
+                </Link>
+              )}
+            </div>
             <div className="nm-rule" />
 
-            <article className="nm-event-feature mt-12">
-              <div className="nm-event-poster-wrap">
-                <img
-                  src="/Assets/Flyer%20UMBRA.jpg"
-                  alt="Flyer del evento Umbra, sábado 3 de octubre de 8 PM a 2 AM en Épica, Avenida Paralela #55-35"
-                  className="nm-event-poster"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
+            {destacado ? (
+              <article className="nm-event-feature mt-12">
+                <div className="nm-event-poster-wrap">
+                  <PosterEvento
+                    posterUrl={destacado.posterUrl}
+                    nombre={destacado.name}
+                    alt={`Flyer del evento ${destacado.name}, ${fechaLarga(destacado.startsAt)} de ${horario(
+                      destacado.startsAt,
+                      destacado.endsAt,
+                    )}${
+                      lugarCompleto(destacado.venue, destacado.address)
+                        ? ` en ${lugarCompleto(destacado.venue, destacado.address)}`
+                        : ""
+                    }`}
+                  />
+                </div>
 
-              <div className="nm-event-info">
-                <p className="nm-eyebrow">Próximo evento</p>
-                <h3 className="nm-display nm-event-title">UMBRA</h3>
-                <p className="nm-event-tagline">Aquí no se escucha. Se siente.</p>
-                <dl className="nm-event-details">
-                  <div>
-                    <dt>Fecha</dt>
-                    <dd>Sábado 3 de octubre</dd>
-                  </div>
-                  <div>
-                    <dt>Horario</dt>
-                    <dd>8 PM — 2 AM</dd>
-                  </div>
-                  <div>
-                    <dt>Lugar</dt>
-                    <dd>Épica — Av. Paralela #55-35</dd>
-                  </div>
-                </dl>
+                <div className="nm-event-info">
+                  <p className="nm-eyebrow">Próximo evento</p>
+                  <h3 className="nm-display nm-event-title">{destacado.name}</h3>
+                  {destacado.tagline && <p className="nm-event-tagline">{destacado.tagline}</p>}
+                  <dl className="nm-event-details">
+                    <div>
+                      <dt>Fecha</dt>
+                      <dd>{fechaLarga(destacado.startsAt)}</dd>
+                    </div>
+                    <div>
+                      <dt>Horario</dt>
+                      <dd>{horario(destacado.startsAt, destacado.endsAt)}</dd>
+                    </div>
+                    {/* Un evento recién anunciado puede no tener sitio cerrado. */}
+                    {lugarCompleto(destacado.venue, destacado.address) && (
+                      <div>
+                        <dt>Lugar</dt>
+                        <dd>{lugarCompleto(destacado.venue, destacado.address)}</dd>
+                      </div>
+                    )}
+                  </dl>
 
-                <button
-                  type="button"
-                  className="nm-btn nm-btn--solid nm-event-cta"
-                  onClick={() => setModal("reservar")}
-                >
-                  Reservar mi cupo
-                </button>
-              </div>
-            </article>
+                  <button
+                    type="button"
+                    className="nm-btn nm-btn--solid nm-event-cta"
+                    onClick={() => {
+                      setReservaSlug(destacado.slug);
+                      setModal("reservar");
+                    }}
+                  >
+                    Reservar mi cupo
+                  </button>
+                </div>
+              </article>
+            ) : (
+              // Sin eventos abiertos la sección se queda, pero dice la verdad en
+              // vez de enseñar un botón que no lleva a ninguna parte.
+              <p className="nm-body-text nm-eventos-vacio mt-12">
+                Estamos cocinando lo próximo. Suscríbete al boletín y te avisamos antes que a nadie.
+              </p>
+            )}
           </div>
         </section>
       </main>
@@ -401,7 +438,7 @@ function Index() {
 
       {/* MODAL RESERVA */}
       <Modal open={modal === "reservar"} onClose={() => setModal(null)} title="Reservar cupo">
-        <ReservationForm onDone={() => setModal(null)} />
+        <ReservationForm eventoInicial={reservaSlug} onDone={() => setModal(null)} />
       </Modal>
 
       {/* MODAL CONTACTO */}
